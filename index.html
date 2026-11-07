@@ -210,7 +210,7 @@
     <div class="fx-layer" id="fx-layer"></div>
 
     <!-- TELA DE SETUP INICIAL (GARANTIDA NO CENTRO AO ABRIR A PÁGINA) -->
-    <div class="setup-overlay" id="setup-overlay" style="display: flex !important;">
+    <div class="setup-overlay" id="setup-overlay" style="display: flex;">
         <div class="setup-modal">
             <div class="setup-title">🚀 Smart Scanner Pro</div>
             <div class="setup-subtitle">Configure sua banca e gerenciamento para iniciar</div>
@@ -423,6 +423,7 @@
         let isLocked = false;
         let voiceEnabled = true;
         let scannerRunning = false;
+        let skipFirstSignal = true; // Ignora o primeiro sinal ao iniciar para confirmação extra
 
         let initialBanca = 60.0;
         let currentBanca = 60.0;
@@ -495,6 +496,7 @@
 
             currentBanca = initialBanca;
             currentSessionId = Date.now();
+            skipFirstSignal = true;
 
             document.getElementById('input-banca').value = initialBanca;
             document.getElementById('input-entrada').value = entryValue;
@@ -503,6 +505,8 @@
 
             renderWallet();
             document.getElementById('setup-overlay').style.display = 'none';
+            document.getElementById('signal-main').textContent = '🔍 BUSCANDO ENTRADAS';
+            document.getElementById('signal-time').textContent = 'Calibrando análise inicial do mercado...';
             scannerRunning = true;
             loadAsset(ASSETS[0]);
             requestWakeLock();
@@ -1238,6 +1242,16 @@
             const remaining = durSec - (nowSec % durSec);
 
             if (signal && remaining >= 14) {
+                // FILTRO INICIAL: Ignora a primeira oportunidade ao iniciar e avisa que está analisando mais um pouco
+                if (skipFirstSignal) {
+                    skipFirstSignal = false;
+                    document.getElementById('status-text').textContent = 'Confirmando fluxo...';
+                    document.getElementById('signal-main').textContent = '⏳ ANALISANDO UM POUCO MAIS';
+                    document.getElementById('signal-time').textContent = 'Vamos analisar mais um pouco, aguarde...';
+                    speak('Vamos analisar mais um pouco, aguarde.');
+                    nextAssetAfter(3500);
+                    return;
+                }
                 prepareSignalAlert(signal, remaining);
             } else {
                 document.getElementById('status-text').textContent = `Escaneando ${currentAsset.label}...`;
