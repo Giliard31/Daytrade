@@ -30,19 +30,19 @@
         }
         body { background: var(--bg-dark); color: var(--text); min-height: 100vh; padding-bottom: 36px; overflow-x: hidden; }
         
-        /* TELA DE SETUP INICIAL (MODAL CENTRAL) */
+        /* TELA DE SETUP INICIAL (MODAL CENTRAL OBRIGATÓRIA) */
         .setup-overlay {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: rgba(5, 9, 13, 0.92); z-index: 99999; display: flex;
-            align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(6px);
+            background: rgba(5, 9, 13, 0.96); z-index: 99999; display: flex;
+            align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(8px);
         }
         .setup-modal {
             background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px;
             width: 100%; max-width: 380px; padding: 24px; display: flex; flex-direction: column; gap: 14px;
-            box-shadow: 0 12px 36px rgba(0,0,0,0.8);
+            box-shadow: 0 12px 36px rgba(0,0,0,0.9);
         }
-        .setup-title { font-size: 1.1rem; font-weight: 800; color: var(--text); text-align: center; margin-bottom: 4px; }
-        .setup-subtitle { font-size: 0.75rem; color: var(--muted); text-align: center; margin-bottom: 8px; }
+        .setup-title { font-size: 1.15rem; font-weight: 800; color: var(--text); text-align: center; margin-bottom: 2px; }
+        .setup-subtitle { font-size: 0.74rem; color: var(--muted); text-align: center; margin-bottom: 6px; }
         .setup-group { display: flex; flex-direction: column; gap: 5px; }
         .setup-label { font-size: 0.72rem; color: var(--muted); font-weight: 700; text-transform: uppercase; }
         .setup-input {
@@ -209,8 +209,8 @@
 <body>
     <div class="fx-layer" id="fx-layer"></div>
 
-    <!-- TELA DE SETUP INICIAL (AO ABRIR NO CELULAR) -->
-    <div class="setup-overlay" id="setup-overlay">
+    <!-- TELA DE SETUP INICIAL (GARANTIDA NO CENTRO AO ABRIR A PÁGINA) -->
+    <div class="setup-overlay" id="setup-overlay" style="display: flex !important;">
         <div class="setup-modal">
             <div class="setup-title">🚀 Smart Scanner Pro</div>
             <div class="setup-subtitle">Configure sua banca e gerenciamento para iniciar</div>
@@ -370,7 +370,7 @@
             </div>
         </div>
 
-        <!-- RODAPÉ TÉCNICO EXIGIDO -->
+        <!-- RODAPÉ TÉCNICO -->
         <div class="tech-footer">
             Ferramenta desenvolvida exclusivamente para estudos técnicos e análise de padrões de mercado.
         </div>
@@ -1061,7 +1061,6 @@
 
             let baseSignal = null;
 
-            // 1. MHI Adaptativo nas últimas 30 velas
             if (isEndOfQuadrant(c0.time)) {
                 const block5 = [c4, c3, c2, c1, c0];
                 if (block5.every(c => c.close !== c.open)) {
@@ -1081,7 +1080,6 @@
                 }
             }
 
-            // 2. C3 Adaptativo (Reversão vs Continuidade nas últimas 30 velas)
             const threeG = isGreen(c2) && isGreen(c1) && isGreen(c0);
             const threeR = isRed(c2) && isRed(c1) && isRed(c0);
             if (!baseSignal && (threeG || threeR)) {
@@ -1096,7 +1094,6 @@
                 baseSignal = { direction: finalDir, type: 'C3', isInverted: isInverted, reason: reasonText };
             }
 
-            // 3. Torres Gêmeas Adaptativo nas últimas 30 velas
             const b1 = body(c1), b0 = body(c0);
             const twin = b1 > 0 && b0 > 0 && Math.abs(b1 - b0) / Math.max(b1, b0) <= 0.22;
             if (!baseSignal && twin && ((isRed(c1) && isGreen(c0)) || (isGreen(c1) && isRed(c0)))) {
@@ -1110,7 +1107,6 @@
                 baseSignal = { direction: finalDir, type: 'TWINS', isInverted: isInverted, reason: reasonText };
             }
 
-            // 4. Tendência (EMA) nas últimas 30 velas
             if (!baseSignal) {
                 const ema9 = calcEMA(last30, 9);
                 const ema21 = calcEMA(last30, 21);
