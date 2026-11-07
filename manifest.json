@@ -1,16 +1,26 @@
 {
+  "id": "/smart-scanner-pro/",
   "name": "Smart Scanner Pro - Giliard Martins",
   "short_name": "SmartScanner",
+  "description": "Scanner de Opções Binárias e Análise de Padrões - Desenvolvido por Giliard Martins",
   "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#05090D",
   "theme_color": "#05090D",
   "orientation": "any",
   "icons": [
     {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='110' fill='%230B121B'/><path d='M80 360 L200 220 L280 290 L430 130' fill='none' stroke='%23FF7043' stroke-width='36' stroke-linecap='round' stroke-linejoin='round'/><circle cx='430' cy='130' r='28' fill='%2300C97B'/></svg>",
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icon-512.png",
       "sizes": "512x512",
-      "type": "image/svg+xml"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
