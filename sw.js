@@ -1,8 +1,9 @@
-const CACHE_NAME = 'smart-scanner-v4';
+const CACHE_NAME = 'smart-scanner-v7';
 const assetsToCache = [
-  './',
   './index.html',
-  './manifest.json'
+  './manifest.json',
+  './icon-192.png',
+  './icon-512.png'
 ];
 
 self.addEventListener('install', (event) => {
@@ -26,15 +27,13 @@ self.addEventListener('activate', (event) => {
       );
     })
   );
-  self.clients.claim();
+  self.clientsClaim();
 });
 
 self.addEventListener('fetch', (event) => {
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      return cachedResponse || fetch(event.request).catch(() => {
-        return caches.match('./index.html');
-      });
+    fetch(event.request).catch(() => {
+      return caches.match(event.request);
     })
   );
 });
