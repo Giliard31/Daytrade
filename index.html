@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Daytrade - Pro</title>
+    <title>Smart Scanner Pro</title>
     <meta name="theme-color" content="#05090D">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -117,7 +117,6 @@
 
         .ticker-wrap { width: 100%; overflow: hidden; background: #050A10; border-bottom: 1px solid var(--border); padding: 7px 0; }
         .ticker-track { display: flex; width: max-content; animation: tickerScroll 26s linear infinite; gap: 10px; padding-left: 10px; }
-        /* TICKER NUNCA PARA DE RODAR */
         @keyframes tickerScroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
         .ticker-item { display: inline-flex; align-items: center; gap: 7px; background: var(--bg-card2); border: 1px solid var(--border); padding: 5px 10px; border-radius: 6px; font-size: 0.75rem; cursor: pointer; transition: all 0.25s ease; white-space: nowrap; }
         .ticker-item .t-sym { font-weight: 700; color: var(--text); }
@@ -164,7 +163,6 @@
         #candleCanvas { width: 100%; height: 100%; display: block; cursor: grab; }
         #candleCanvas:active { cursor: grabbing; }
         
-        /* HUD GRANDE E DESTACADO DENTRO DO GRÁFICO (ATIVO + MINUTOS) */
         .chart-hud { position: absolute; top: 12px; left: 12px; background: rgba(11, 18, 27, 0.92); backdrop-filter: blur(6px); border: 1px solid var(--border); border-radius: 10px; padding: 8px 14px; display: flex; align-items: center; gap: 10px; pointer-events: none; z-index: 10; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
         .hud-asset { font-weight: 900; font-size: 1.05rem; color: #FFF; letter-spacing: 0.5px; }
         .hud-tf { font-size: 0.85rem; font-weight: 900; background: rgba(0,201,123,0.22); color: var(--up); padding: 3px 8px; border-radius: 6px; border: 1px solid rgba(0,201,123,0.4); }
@@ -340,7 +338,6 @@
         <!-- GRÁFICO -->
         <div class="chart-card">
             <div class="canvas-box" id="canvas-box">
-                <!-- HUD DESTACADO: ATIVO + MINUTOS -->
                 <div class="chart-hud">
                     <span class="hud-asset" id="hud-asset">BTC/USDT</span>
                     <span class="hud-tf" id="hud-tf">M1</span>
@@ -445,8 +442,8 @@
         let activeSignal = null;
         let signalPhase = 'IDLE';
 
-        let mainHistory = JSON.parse(localStorage.getItem('proScannerMainHistoryV5') || '[]');
-        let sessionsHistory = JSON.parse(localStorage.getItem('proScannerSessionsV5') || '[]');
+        let mainHistory = JSON.parse(localStorage.getItem('proScannerMainHistoryV6') || '[]');
+        let sessionsHistory = JSON.parse(localStorage.getItem('proScannerSessionsV6') || '[]');
         let currentSessionId = Date.now();
 
         let wakeLock = null;
@@ -508,11 +505,11 @@
             renderWallet();
             document.getElementById('setup-overlay').style.display = 'none';
             document.getElementById('signal-main').textContent = '🔍 BUSCANDO ENTRADAS';
-            document.getElementById('signal-time').textContent = 'Calibrando zonas de topo e fundo...';
+            document.getElementById('signal-time').textContent = 'Monitorando reversão em topos e fundos...';
             scannerRunning = true;
             loadAsset(ASSETS[0]);
             requestWakeLock();
-            speak('Sessão iniciada. Monitorando topos e fundos.');
+            speak('Sessão iniciada. Monitorando zonas de exaustão.');
         }
 
         function startNewSession() {
@@ -1059,11 +1056,10 @@
             const c3 = last30[last30.length - 4];
             const c4 = last30[last30.length - 5];
 
-            // RIGOR NA VERIFICAÇÃO DE TOPO E FUNDO S/R
             const distToTop = Math.abs(c0.close - sr.top) / sr.top;
             const distToBottom = Math.abs(c0.close - sr.bottom) / sr.bottom;
-            const isNearTop = distToTop <= 0.0018;       // Faixa rígida de aproximação ao topo
-            const isNearBottom = distToBottom <= 0.0018; // Faixa rígida de aproximação ao fundo
+            const isNearTop = distToTop <= 0.0018;
+            const isNearBottom = distToBottom <= 0.0018;
 
             let baseSignal = null;
 
@@ -1077,10 +1073,7 @@
                         const normalDir = (g === 2) ? 'SELL' : 'BUY';
                         const isInverted = stats.MHI.invertedWins > stats.MHI.normalWins;
                         const finalDir = isInverted ? (normalDir === 'BUY' ? 'SELL' : 'BUY') : normalDir;
-                        const finalAcao = finalDir === 'BUY' ? 'Compra' : 'Venda';
-                        const reasonText = isInverted
-                            ? `Entrada invertida em ${finalAcao} (MHI)! Nas últimas 30 velas o invertido pagou ${stats.MHI.invertedWins} WIN contra ${stats.MHI.normalWins} do normal.`
-                            : `Padrão MHI respeitando a minoria nas últimas 30 velas (${stats.MHI.normalWins} WIN contra ${stats.MHI.invertedWins} invertido).`;
+                        const reasonText = `Padrão MHI nas últimas 30 velas (${stats.MHI.normalWins} WIN).`;
                         baseSignal = { direction: finalDir, type: 'MHI', isInverted: isInverted, reason: reasonText };
                     }
                 }
@@ -1092,11 +1085,7 @@
                 const normalDir = threeG ? 'SELL' : 'BUY';
                 const isInverted = stats.C3.invertedWins > stats.C3.normalWins;
                 const finalDir = isInverted ? (normalDir === 'BUY' ? 'SELL' : 'BUY') : normalDir;
-                const finalAcao = finalDir === 'BUY' ? 'Compra' : 'Venda';
-                const seqCor = threeG ? '3 velas verdes seguidas' : '3 velas vermelhas seguidas';
-                const reasonText = isInverted
-                    ? `Entrada invertida em ${finalAcao} no C3! Tivemos ${seqCor} e nas últimas 30 velas a continuidade pagou mais (${stats.C3.invertedWins} WIN contra ${stats.C3.normalWins}).`
-                    : `Tivemos ${seqCor} e o C3 está respeitando a reversão nas últimas 30 velas (${stats.C3.normalWins} WIN contra ${stats.C3.invertedWins}).`;
+                const reasonText = `Padrão C3 nas últimas 30 velas (${stats.C3.normalWins} WIN).`;
                 baseSignal = { direction: finalDir, type: 'C3', isInverted: isInverted, reason: reasonText };
             }
 
@@ -1106,10 +1095,7 @@
                 const normalDir = (isRed(c1) && isGreen(c0)) ? 'BUY' : 'SELL';
                 const isInverted = stats.TWINS.invertedWins > stats.TWINS.normalWins;
                 const finalDir = isInverted ? (normalDir === 'BUY' ? 'SELL' : 'BUY') : normalDir;
-                const finalAcao = finalDir === 'BUY' ? 'Compra' : 'Venda';
-                const reasonText = isInverted
-                    ? `Torres Gêmeas invertidas em ${finalAcao} (${stats.TWINS.invertedWins} WIN nas últimas 30 velas contra ${stats.TWINS.normalWins}).`
-                    : `Torres Gêmeas no padrão normal (${stats.TWINS.normalWins} WIN nas últimas 30 velas contra ${stats.TWINS.invertedWins}).`;
+                const reasonText = `Torres Gêmeas nas últimas 30 velas (${stats.TWINS.normalWins} WIN).`;
                 baseSignal = { direction: finalDir, type: 'TWINS', isInverted: isInverted, reason: reasonText };
             }
 
@@ -1117,34 +1103,34 @@
                 const ema9 = calcEMA(last30, 9);
                 const ema21 = calcEMA(last30, 21);
                 if (c0.close > ema9 && ema9 > ema21 && isGreen(c0)) {
-                    baseSignal = { direction: 'BUY', type: null, isInverted: false, reason: 'Tendência de alta alinhada com as médias móveis nas últimas 30 velas.' };
+                    baseSignal = { direction: 'BUY', type: null, isInverted: false, reason: 'Tendência de alta nas médias móveis.' };
                 } else if (c0.close < ema9 && ema9 < ema21 && isRed(c0)) {
-                    baseSignal = { direction: 'SELL', type: null, isInverted: false, reason: 'Tendência de baixa alinhada com as médias móveis nas últimas 30 velas.' };
+                    baseSignal = { direction: 'SELL', type: null, isInverted: false, reason: 'Tendência de baixa nas médias móveis.' };
                 }
             }
 
             if (!baseSignal) return null;
 
-            // FILTRA SE O SINAL ESTÁ ALINHADO COM A ZONA DE TOPO/FUNDO
-            let barrierWarning = false;
+            // REVERSÃO INTELIGENTE DE TOPO E FUNDO (FIBO / S&R)
+            let finalDirection = baseSignal.direction;
             let reasonText = baseSignal.reason;
+            let barrierWarning = false;
 
-            if (isNearTop) {
+            if (isNearTop && finalDirection === 'BUY') {
+                finalDirection = 'SELL';
                 barrierWarning = true;
-                reasonText += ` 📍 Preço testando a região exata de TOPO. Rejeição máxima!`;
-            } else if (isNearBottom) {
+                reasonText = `🔄 REVERSÃO AUTOMÁTICA! O preço bateu no TOPO exato (Resistência / Fibo R). Invertido para VENDA.`;
+            } else if (isNearBottom && finalDirection === 'SELL') {
+                finalDirection = 'BUY';
                 barrierWarning = true;
-                reasonText += ` 📍 Preço testando a região exata de FUNDO. Suporte forte!`;
-            } else {
-                // Se o sinal for contra tendência no meio do gráfico sem estar no topo/fundo, filtramos para evitar falso sinal
-                if ((baseSignal.direction === 'SELL' && c0.close < sr.midTop) || (baseSignal.direction === 'BUY' && c0.close > sr.midBottom)) {
-                    // Fora da zona de exaustão ideal, adicionamos cautela na descrição
-                    reasonText += ` ℹ️ Nota: Sinal fora da extremidade exata de topo/fundo.`;
-                }
+                reasonText = `🔄 REVERSÃO AUTOMÁTICA! O preço testou o FUNDO exato (Suporte / Fibo S). Invertido para COMPRA.`;
+            } else if (isNearTop || isNearBottom) {
+                barrierWarning = true;
+                reasonText += ` 📍 Preço na zona exata de exaustão de S/R.`;
             }
 
             return {
-                direction: baseSignal.direction,
+                direction: finalDirection,
                 type: baseSignal.type,
                 isInverted: baseSignal.isInverted,
                 isNearBarrier: barrierWarning,
@@ -1223,6 +1209,35 @@
                         }
                     }
                     drawChart();
+
+                    // REAVALIAÇÃO EM TEMPO REAL ANTES DO DISPARO DA ENTRADA
+                    if (activeSignal && signalPhase === 'PREPARING') {
+                        const updatedSignal = analyzeMarket(candles);
+                        if (updatedSignal && updatedSignal.direction !== activeSignal.direction) {
+                            activeSignal.direction = updatedSignal.direction;
+                            activeSignal.reason = updatedSignal.reason;
+                            activeSignal.isNearBarrier = updatedSignal.isNearBarrier;
+                            
+                            const sigCard = document.getElementById('signal-card');
+                            sigCard.classList.remove('buy', 'sell');
+                            sigCard.classList.add(activeSignal.direction === 'BUY' ? 'buy' : 'sell');
+
+                            const badge = document.getElementById('mode-badge');
+                            badge.className = 'mode-badge warning';
+                            badge.textContent = '🔄 SINAL REVERTIDO NA BARREIRA!';
+
+                            document.getElementById('signal-main').textContent = activeSignal.direction === 'BUY'
+                                ? `🟢 REVERTIDO PARA COMPRA — ${currentAsset.label}`
+                                : `🔴 REVERTIDO PARA VENDA — ${currentAsset.label}`;
+
+                            const reasonBox = document.getElementById('signal-reason');
+                            reasonBox.style.display = 'block';
+                            reasonBox.innerHTML = `<strong>⚠️ ATENÇÃO AO TOQUE NA BARREIRA:</strong>${activeSignal.reason}`;
+
+                            const dirFala = activeSignal.direction === 'BUY' ? 'Compra' : 'Venda';
+                            speak(`Atenção! O preço tocou na barreira e o sinal foi revertido para ${dirFala}!`);
+                        }
+                    }
                 }
 
                 if (isClosed && activeSignal && signalPhase === 'RUNNING' && live.time >= activeSignal.targetTime) {
@@ -1306,20 +1321,15 @@
             sigCard.classList.add(signal.direction === 'BUY' ? 'buy' : 'sell');
 
             const badge = document.getElementById('mode-badge');
-            if (signal.isInverted) {
+            if (signal.isNearBarrier) {
+                badge.className = 'mode-badge warning';
+                badge.textContent = '📍 REJEIÇÃO EM TOPO / FUNDO';
+            } else if (signal.isInverted) {
                 badge.className = 'mode-badge inverted';
-                badge.textContent = '🔄 MODO INVERTIDO (MAIS ASSERTIVO)';
+                badge.textContent = '🔄 MODO INVERTIDO';
             } else {
                 badge.className = 'mode-badge normal';
-                badge.textContent = '✅ PADRÃO NORMAL (CONFIRMADO)';
-            }
-
-            const barrierBadge = document.getElementById('barrier-badge');
-            if (signal.isNearBarrier) {
-                barrierBadge.className = 'mode-badge warning';
-                barrierBadge.textContent = '📍 TOPO / FUNDO CONFIRMADO';
-            } else {
-                barrierBadge.className = 'mode-badge';
+                badge.textContent = '✅ PADRÃO NORMAL';
             }
 
             document.getElementById('signal-main').textContent = signal.direction === 'BUY'
@@ -1378,7 +1388,7 @@
 
             mainHistory.unshift(tradeRecord);
             if (mainHistory.length > 30) mainHistory.pop();
-            localStorage.setItem('proScannerMainHistoryV5', JSON.stringify(mainHistory));
+            localStorage.setItem('proScannerMainHistoryV6', JSON.stringify(mainHistory));
 
             let session = sessionsHistory.find(s => s.id === currentSessionId);
             if (!session) {
@@ -1395,7 +1405,7 @@
             }
             session.bancaFinal = currentBanca;
             session.trades.unshift(tradeRecord);
-            localStorage.setItem('proScannerSessionsV5', JSON.stringify(sessionsHistory));
+            localStorage.setItem('proScannerSessionsV6', JSON.stringify(sessionsHistory));
 
             renderAllHistories();
 
@@ -1590,19 +1600,19 @@
 
         function clearMainHistory() {
             mainHistory = [];
-            localStorage.removeItem('proScannerMainHistoryV5');
+            localStorage.removeItem('proScannerMainHistoryV6');
             renderAllHistories();
         }
 
         function clearSessionsHistory() {
             sessionsHistory = [];
-            localStorage.removeItem('proScannerSessionsV5');
+            localStorage.removeItem('proScannerSessionsV6');
             renderAllHistories();
         }
 
         function deleteSessionItem(id) {
             sessionsHistory = sessionsHistory.filter(s => s.id !== id);
-            localStorage.setItem('proScannerSessionsV5', JSON.stringify(sessionsHistory));
+            localStorage.setItem('proScannerSessionsV6', JSON.stringify(sessionsHistory));
             renderAllHistories();
         }
 
