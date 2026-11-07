@@ -28,8 +28,34 @@
             --top-line: #FF7043;
             --bot-line: #29B6F6;
         }
-        body { background: var(--bg-dark); color: var(--text); min-height: 100vh; padding-bottom: 28px; overflow-x: hidden; }
+        body { background: var(--bg-dark); color: var(--text); min-height: 100vh; padding-bottom: 36px; overflow-x: hidden; }
         
+        /* TELA DE SETUP INICIAL (MODAL CENTRAL) */
+        .setup-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(5, 9, 13, 0.92); z-index: 99999; display: flex;
+            align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(6px);
+        }
+        .setup-modal {
+            background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px;
+            width: 100%; max-width: 380px; padding: 24px; display: flex; flex-direction: column; gap: 14px;
+            box-shadow: 0 12px 36px rgba(0,0,0,0.8);
+        }
+        .setup-title { font-size: 1.1rem; font-weight: 800; color: var(--text); text-align: center; margin-bottom: 4px; }
+        .setup-subtitle { font-size: 0.75rem; color: var(--muted); text-align: center; margin-bottom: 8px; }
+        .setup-group { display: flex; flex-direction: column; gap: 5px; }
+        .setup-label { font-size: 0.72rem; color: var(--muted); font-weight: 700; text-transform: uppercase; }
+        .setup-input {
+            background: #050A10; border: 1px solid var(--border); color: var(--text);
+            padding: 10px 12px; border-radius: 9px; font-size: 0.95rem; font-weight: 700; width: 100%;
+        }
+        .setup-btn {
+            background: var(--up); color: #05090D; border: none; padding: 14px;
+            border-radius: 10px; font-weight: 800; font-size: 0.95rem; cursor: pointer; width: 100%; margin-top: 6px;
+            box-shadow: 0 4px 14px rgba(0,201,123,0.3);
+        }
+        .setup-footer-note { font-size: 0.65rem; color: var(--muted); text-align: center; margin-top: 6px; line-height: 1.3; }
+
         .sticky-top { position: sticky; top: 0; z-index: 1000; background: #070D14; box-shadow: 0 4px 16px rgba(0,0,0,0.7); }
         .header { padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); gap: 6px; flex-wrap: wrap; }
         .logo { display: flex; align-items: center; gap: 7px; }
@@ -69,7 +95,6 @@
         }
         .drawer-footer { margin-top: auto; text-align: center; font-size: 0.7rem; color: var(--muted); border-top: 1px solid var(--border); padding-top: 8px; }
         
-        /* HISTÓRICO AGRUPADO POR SESSÃO NA GAVETA */
         .drawer-history-box { max-height: 220px; overflow-y: auto; background: #050A10; border: 1px solid var(--border); border-radius: 8px; padding: 6px; display: flex; flex-direction: column; gap: 6px; }
         .session-card { background: var(--bg-card2); border: 1px solid var(--border); border-radius: 7px; padding: 8px; }
         .session-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
@@ -163,6 +188,9 @@
         .res-win { color: var(--up); font-weight: 800; }
         .res-loss { color: var(--down); font-weight: 800; }
 
+        /* RODAPÉ TÉCNICO */
+        .tech-footer { text-align: center; font-size: 0.7rem; color: var(--muted); margin-top: 14px; padding: 6px; border-top: 1px solid var(--border); }
+
         /* MODO PAISAGEM INTELIGENTE */
         @media (min-width: 768px) or (orientation: landscape) {
             .container { max-width: 98vw; display: grid; grid-template-columns: 360px 1fr; gap: 12px; align-items: start; }
@@ -181,6 +209,34 @@
 <body>
     <div class="fx-layer" id="fx-layer"></div>
 
+    <!-- TELA DE SETUP INICIAL (AO ABRIR NO CELULAR) -->
+    <div class="setup-overlay" id="setup-overlay">
+        <div class="setup-modal">
+            <div class="setup-title">🚀 Smart Scanner Pro</div>
+            <div class="setup-subtitle">Configure sua banca e gerenciamento para iniciar</div>
+            
+            <div class="setup-group">
+                <label class="setup-label">Valor da Banca Inicial (R$)</label>
+                <input type="number" id="modal-banca" class="setup-input" value="60">
+            </div>
+            <div class="setup-group">
+                <label class="setup-label">Valor de Cada Entrada (R$)</label>
+                <input type="number" id="modal-entrada" class="setup-input" value="5">
+            </div>
+            <div class="setup-group">
+                <label class="setup-label">Meta de Stop Win (R$)</label>
+                <input type="number" id="modal-stopwin" class="setup-input" value="15">
+            </div>
+            <div class="setup-group">
+                <label class="setup-label">Limite de Stop Loss (R$)</label>
+                <input type="number" id="modal-stoploss" class="setup-input" value="12">
+            </div>
+
+            <button class="setup-btn" onclick="submitSetupModal()">Iniciar Sessão</button>
+            <div class="setup-footer-note">Desenvolvido para fins de estudos técnicos e análise de padrões.</div>
+        </div>
+    </div>
+
     <!-- GAVETA LATERAL -->
     <div class="drawer-overlay" id="drawer-overlay" onclick="toggleDrawer()"></div>
     <div class="drawer" id="drawer">
@@ -193,7 +249,7 @@
 
         <div class="drawer-row-2">
             <div class="drawer-group">
-                <label class="drawer-label">Banca Inicial (R$)</label>
+                <label class="drawer-label">Banca Atual (R$)</label>
                 <input type="number" id="input-banca" class="drawer-input" value="60" onchange="startNewSession()">
             </div>
             <div class="drawer-group">
@@ -216,7 +272,7 @@
         </div>
         <div class="drawer-group" style="margin-top: 3px;">
             <div style="display:flex;justify-content:space-between;align-items:center;">
-                <label class="drawer-label">📋 Histórico de Sessões (Toque para abrir)</label>
+                <label class="drawer-label">📋 Histórico de Sessões</label>
                 <button class="btn-clear" onclick="clearSessionsHistory()">Limpar</button>
             </div>
             <div class="drawer-history-box" id="drawer-history-list">
@@ -244,7 +300,7 @@
                 <button class="btn-voice active" id="btn-voice" onclick="toggleVoice()" title="Voz">🔊</button>
                 <div class="status-pill">
                     <div class="lab-scanner-anim"></div>
-                    <span id="status-text">Escaneando...</span>
+                    <span id="status-text">Aguardando início...</span>
                 </div>
             </div>
         </div>
@@ -268,12 +324,12 @@
 
         <!-- CARD DE SINAL -->
         <div class="signal-card" id="signal-card">
-            <div class="signal-main" id="signal-main">🔍 BUSCANDO ENTRADAS</div>
+            <div class="signal-main" id="signal-main">⏳ AGUARDANDO INÍCIO</div>
             <div class="badges-row">
                 <span class="mode-badge" id="mode-badge"></span>
                 <span class="mode-badge" id="barrier-badge"></span>
             </div>
-            <div class="signal-time" id="signal-time">Analisando topos, fundos e padrões...</div>
+            <div class="signal-time" id="signal-time">Preencha o setup inicial para começar</div>
             <div class="signal-reason" id="signal-reason"></div>
             <div>
                 <button class="btn-unlock" id="btn-unlock" onclick="resumeAutoScan()">Pular e continuar busca</button>
@@ -299,7 +355,7 @@
             <div class="chart-legend-mini">
                 <span><strong style="color:var(--top-line)">━ TOPO</strong></span>
                 <span><strong style="color:var(--bot-line)">━ FUNDO</strong></span>
-                <span><strong style="color:#00C97B">▲ WIN (Últimos 30m)</strong></span>
+                <span><strong style="color:#00C97B">▲ WIN (Últimas 30 velas)</strong></span>
             </div>
         </div>
 
@@ -313,10 +369,14 @@
                 <div style="text-align:center;color:var(--muted);font-size:0.8rem;padding:10px;">Nenhuma entrada finalizada ainda</div>
             </div>
         </div>
+
+        <!-- RODAPÉ TÉCNICO EXIGIDO -->
+        <div class="tech-footer">
+            Ferramenta desenvolvida exclusivamente para estudos técnicos e análise de padrões de mercado.
+        </div>
     </div>
 
     <script>
-        // REGISTRO DO SERVICE WORKER E PROMPT DE INSTALAÇÃO PWA
         let deferredPrompt = null;
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -362,6 +422,7 @@
         let scanTimer = null;
         let isLocked = false;
         let voiceEnabled = true;
+        let scannerRunning = false;
 
         let initialBanca = 60.0;
         let currentBanca = 60.0;
@@ -381,8 +442,8 @@
         let activeSignal = null;
         let signalPhase = 'IDLE';
 
-        let mainHistory = JSON.parse(localStorage.getItem('proScannerMainHistoryV3') || '[]');
-        let sessionsHistory = JSON.parse(localStorage.getItem('proScannerSessionsV3') || '[]');
+        let mainHistory = JSON.parse(localStorage.getItem('proScannerMainHistoryV4') || '[]');
+        let sessionsHistory = JSON.parse(localStorage.getItem('proScannerSessionsV4') || '[]');
         let currentSessionId = Date.now();
 
         let wakeLock = null;
@@ -419,6 +480,33 @@
             const overlay = document.getElementById('drawer-overlay');
             const isOpen = drawer.classList.toggle('open');
             overlay.style.display = isOpen ? 'block' : 'none';
+        }
+
+        function submitSetupModal() {
+            const b = parseFloat(document.getElementById('modal-banca').value);
+            const e = parseFloat(document.getElementById('modal-entrada').value);
+            const sw = parseFloat(document.getElementById('modal-stopwin').value);
+            const sl = parseFloat(document.getElementById('modal-stoploss').value);
+
+            if (!isNaN(b) && b > 0) initialBanca = b;
+            if (!isNaN(e) && e > 0) entryValue = e;
+            if (!isNaN(sw) && sw > 0) stopWinLimit = sw;
+            if (!isNaN(sl) && sl > 0) stopLossLimit = sl;
+
+            currentBanca = initialBanca;
+            currentSessionId = Date.now();
+
+            document.getElementById('input-banca').value = initialBanca;
+            document.getElementById('input-entrada').value = entryValue;
+            document.getElementById('input-stopwin').value = stopWinLimit;
+            document.getElementById('input-stoploss').value = stopLossLimit;
+
+            renderWallet();
+            document.getElementById('setup-overlay').style.display = 'none';
+            scannerRunning = true;
+            loadAsset(ASSETS[0]);
+            requestWakeLock();
+            speak('Sessão iniciada. Escaneando o mercado.');
         }
 
         function startNewSession() {
@@ -475,7 +563,7 @@
             document.getElementById('btn-unlock').style.display = 'none';
 
             speak(`Tempo gráfico alterado para ${tf === '1m' ? 'M 1' : 'M 5'}.`);
-            loadAsset(currentAsset);
+            if (scannerRunning) loadAsset(currentAsset);
         }
 
         function speak(text) {
@@ -973,7 +1061,7 @@
 
             let baseSignal = null;
 
-            // 1. MHI Adaptativo
+            // 1. MHI Adaptativo nas últimas 30 velas
             if (isEndOfQuadrant(c0.time)) {
                 const block5 = [c4, c3, c2, c1, c0];
                 if (block5.every(c => c.close !== c.open)) {
@@ -986,14 +1074,14 @@
                         const finalDir = isInverted ? (normalDir === 'BUY' ? 'SELL' : 'BUY') : normalDir;
                         const finalAcao = finalDir === 'BUY' ? 'Compra' : 'Venda';
                         const reasonText = isInverted
-                            ? `Entrando invertido em ${finalAcao}! Nos últimos 30m o MHI invertido (maioria) pagou ${stats.MHI.invertedWins} WIN contra ${stats.MHI.normalWins} do normal.`
-                            : `Padrão MHI respeitando a minoria nos últimos 30m (${stats.MHI.normalWins} WIN contra ${stats.MHI.invertedWins} invertido).`;
+                            ? `Entrada invertida em ${finalAcao}! Nas últimas 30 velas o MHI invertido (maioria) pagou ${stats.MHI.invertedWins} WIN contra ${stats.MHI.normalWins} do normal.`
+                            : `Padrão MHI respeitando a minoria nas últimas 30 velas (${stats.MHI.normalWins} WIN contra ${stats.MHI.invertedWins} invertido).`;
                         baseSignal = { direction: finalDir, type: 'MHI', isInverted: isInverted, reason: reasonText };
                     }
                 }
             }
 
-            // 2. C3 Adaptativo (Reversão vs Continuidade)
+            // 2. C3 Adaptativo (Reversão vs Continuidade nas últimas 30 velas)
             const threeG = isGreen(c2) && isGreen(c1) && isGreen(c0);
             const threeR = isRed(c2) && isRed(c1) && isRed(c0);
             if (!baseSignal && (threeG || threeR)) {
@@ -1003,12 +1091,12 @@
                 const finalAcao = finalDir === 'BUY' ? 'Compra' : 'Venda';
                 const seqCor = threeG ? '3 velas verdes seguidas' : '3 velas vermelhas seguidas';
                 const reasonText = isInverted
-                    ? `Entrando invertido em ${finalAcao} no C3! Tivemos ${seqCor} e nos últimos 30m a continuidade pagou mais (${stats.C3.invertedWins} WIN contra ${stats.C3.normalWins} da reversão).`
-                    : `Tivemos ${seqCor} e o C3 está respeitando a reversão nos últimos 30m (${stats.C3.normalWins} WIN contra ${stats.C3.invertedWins}).`;
+                    ? `Entrada invertida em ${finalAcao} no C3! Tivemos ${seqCor} e nas últimas 30 velas a continuidade pagou mais (${stats.C3.invertedWins} WIN contra ${stats.C3.normalWins} da reversão).`
+                    : `Tivemos ${seqCor} e o C3 está respeitando a reversão nas últimas 30 velas (${stats.C3.normalWins} WIN contra ${stats.C3.invertedWins}).`;
                 baseSignal = { direction: finalDir, type: 'C3', isInverted: isInverted, reason: reasonText };
             }
 
-            // 3. Torres Gêmeas Adaptativo
+            // 3. Torres Gêmeas Adaptativo nas últimas 30 velas
             const b1 = body(c1), b0 = body(c0);
             const twin = b1 > 0 && b0 > 0 && Math.abs(b1 - b0) / Math.max(b1, b0) <= 0.22;
             if (!baseSignal && twin && ((isRed(c1) && isGreen(c0)) || (isGreen(c1) && isRed(c0)))) {
@@ -1017,19 +1105,19 @@
                 const finalDir = isInverted ? (normalDir === 'BUY' ? 'SELL' : 'BUY') : normalDir;
                 const finalAcao = finalDir === 'BUY' ? 'Compra' : 'Venda';
                 const reasonText = isInverted
-                    ? `Torres Gêmeas com leitura invertida em ${finalAcao} (${stats.TWINS.invertedWins} WIN contra ${stats.TWINS.normalWins} normal).`
-                    : `Torres Gêmeas respeitando o padrão normal (${stats.TWINS.normalWins} WIN contra ${stats.TWINS.invertedWins}).`;
+                    ? `Torres Gêmeas com leitura invertida em ${finalAcao} (${stats.TWINS.invertedWins} WIN nas últimas 30 velas contra ${stats.TWINS.normalWins} normal).`
+                    : `Torres Gêmeas respeitando o padrão normal (${stats.TWINS.normalWins} WIN nas últimas 30 velas contra ${stats.TWINS.invertedWins}).`;
                 baseSignal = { direction: finalDir, type: 'TWINS', isInverted: isInverted, reason: reasonText };
             }
 
-            // 4. Tendência (EMA)
+            // 4. Tendência (EMA) nas últimas 30 velas
             if (!baseSignal) {
                 const ema9 = calcEMA(last30, 9);
                 const ema21 = calcEMA(last30, 21);
                 if (c0.close > ema9 && ema9 > ema21 && isGreen(c0)) {
-                    baseSignal = { direction: 'BUY', type: null, isInverted: false, reason: 'Tendência de alta alinhada com as médias móveis nos últimos 30m.' };
+                    baseSignal = { direction: 'BUY', type: null, isInverted: false, reason: 'Tendência de alta alinhada com as médias móveis nas últimas 30 velas.' };
                 } else if (c0.close < ema9 && ema9 < ema21 && isRed(c0)) {
-                    baseSignal = { direction: 'SELL', type: null, isInverted: false, reason: 'Tendência de baixa alinhada com as médias móveis nos últimos 30m.' };
+                    baseSignal = { direction: 'SELL', type: null, isInverted: false, reason: 'Tendência de baixa alinhada com as médias móveis nas últimas 30 velas.' };
                 }
             }
 
@@ -1069,6 +1157,7 @@
         }
 
         async function loadAsset(assetObj) {
+            if (!scannerRunning) return;
             currentAsset = assetObj;
             document.getElementById('hud-asset').textContent = assetObj.label;
             scrollOffset = 0;
@@ -1092,7 +1181,7 @@
                 connectWebSocket(assetObj, activeTf);
 
                 setTimeout(() => {
-                    if (currentAsset.symbol !== assetObj.symbol || timeframe !== activeTf || isLocked) return;
+                    if (!scannerRunning || currentAsset.symbol !== assetObj.symbol || timeframe !== activeTf || isLocked) return;
                     checkAndDecide();
                 }, 2000);
             } catch (e) {
@@ -1131,13 +1220,14 @@
                 }
             };
             ws.onclose = () => {
-                if (currentAsset.symbol === assetObj.symbol && timeframe === activeTf) {
+                if (scannerRunning && currentAsset.symbol === assetObj.symbol && timeframe === activeTf) {
                     setTimeout(() => connectWebSocket(assetObj, activeTf), 2000);
                 }
             };
         }
 
         function checkAndDecide() {
+            if (!scannerRunning) return;
             const lucroAtual = currentBanca - initialBanca;
             if (lucroAtual >= stopWinLimit || lucroAtual <= -stopLossLimit) {
                 document.getElementById('status-text').textContent = 'Meta de gerenciamento atingida.';
@@ -1151,7 +1241,6 @@
             const nowSec = Math.floor(Date.now() / 1000);
             const remaining = durSec - (nowSec % durSec);
 
-            // GARANTIA DE TEMPO PARA PREPARAÇÃO: Só avisa se faltarem pelo menos 14 segundos para abrir a próxima vela
             if (signal && remaining >= 14) {
                 prepareSignalAlert(signal, remaining);
             } else {
@@ -1269,12 +1358,10 @@
                 won: won
             };
 
-            // 1. Atualiza Histórico Principal (embaixo do gráfico)
             mainHistory.unshift(tradeRecord);
             if (mainHistory.length > 30) mainHistory.pop();
-            localStorage.setItem('proScannerMainHistoryV3', JSON.stringify(mainHistory));
+            localStorage.setItem('proScannerMainHistoryV4', JSON.stringify(mainHistory));
 
-            // 2. Agrupa dentro da Sessão Atual na Gaveta (sem repetir um embaixo do outro fora da sessão)
             let session = sessionsHistory.find(s => s.id === currentSessionId);
             if (!session) {
                 const now = new Date();
@@ -1290,7 +1377,7 @@
             }
             session.bancaFinal = currentBanca;
             session.trades.unshift(tradeRecord);
-            localStorage.setItem('proScannerSessionsV3', JSON.stringify(sessionsHistory));
+            localStorage.setItem('proScannerSessionsV4', JSON.stringify(sessionsHistory));
 
             renderAllHistories();
 
@@ -1346,13 +1433,14 @@
         function nextAssetAfter(ms) {
             if (scanTimer) clearTimeout(scanTimer);
             scanTimer = setTimeout(() => {
-                if (isLocked) return;
+                if (!scannerRunning || isLocked) return;
                 currentIndex = (currentIndex + 1) % ASSETS.length;
                 loadAsset(ASSETS[currentIndex]);
             }, ms);
         }
 
         function resumeAutoScan() {
+            if (!scannerRunning) return;
             const lucroAtual = currentBanca - initialBanca;
             if (lucroAtual >= stopWinLimit || lucroAtual <= -stopLossLimit) return;
 
@@ -1373,6 +1461,7 @@
         }
 
         function selectAssetManually(symbol) {
+            if (!scannerRunning) return;
             const idx = ASSETS.findIndex(a => a.symbol === symbol);
             if (idx === -1) return;
             isLocked = false; activeSignal = null; signalPhase = 'IDLE';
@@ -1392,6 +1481,7 @@
 
         function startClock() {
             setInterval(() => {
+                if (!scannerRunning) return;
                 const now = new Date();
                 const nowUnix = Math.floor(now.getTime() / 1000);
                 const durSec = getCandleDurationSec();
@@ -1446,7 +1536,6 @@
                 `).join('');
             }
 
-            // Histórico Agrupado por Sessão na Gaveta
             const drawerList = document.getElementById('drawer-history-list');
             if (sessionsHistory.length === 0) {
                 drawerList.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:0.7rem;padding:8px;">Nenhuma sessão registrada ainda</div>';
@@ -1485,19 +1574,19 @@
 
         function clearMainHistory() {
             mainHistory = [];
-            localStorage.removeItem('proScannerMainHistoryV3');
+            localStorage.removeItem('proScannerMainHistoryV4');
             renderAllHistories();
         }
 
         function clearSessionsHistory() {
             sessionsHistory = [];
-            localStorage.removeItem('proScannerSessionsV3');
+            localStorage.removeItem('proScannerSessionsV4');
             renderAllHistories();
         }
 
         function deleteSessionItem(id) {
             sessionsHistory = sessionsHistory.filter(s => s.id !== id);
-            localStorage.setItem('proScannerSessionsV3', JSON.stringify(sessionsHistory));
+            localStorage.setItem('proScannerSessionsV4', JSON.stringify(sessionsHistory));
             renderAllHistories();
         }
 
@@ -1510,8 +1599,6 @@
             renderWallet();
             renderAllHistories();
             startClock();
-            loadAsset(ASSETS[0]);
-            requestWakeLock();
         });
     </script>
 </body>
