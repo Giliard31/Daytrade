@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Smart Scanner Pro</title>
+    <title>Daytrade - Pro</title>
     <meta name="theme-color" content="#05090D">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -117,7 +117,7 @@
 
         .ticker-wrap { width: 100%; overflow: hidden; background: #050A10; border-bottom: 1px solid var(--border); padding: 7px 0; }
         .ticker-track { display: flex; width: max-content; animation: tickerScroll 26s linear infinite; gap: 10px; padding-left: 10px; }
-        .ticker-wrap:hover .ticker-track, .ticker-wrap.paused .ticker-track { animation-play-state: paused; }
+        /* TICKER NUNCA PARA DE RODAR */
         @keyframes tickerScroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
         .ticker-item { display: inline-flex; align-items: center; gap: 7px; background: var(--bg-card2); border: 1px solid var(--border); padding: 5px 10px; border-radius: 6px; font-size: 0.75rem; cursor: pointer; transition: all 0.25s ease; white-space: nowrap; }
         .ticker-item .t-sym { font-weight: 700; color: var(--text); }
@@ -164,11 +164,12 @@
         #candleCanvas { width: 100%; height: 100%; display: block; cursor: grab; }
         #candleCanvas:active { cursor: grabbing; }
         
-        .chart-hud { position: absolute; top: 10px; left: 10px; background: rgba(11, 18, 27, 0.9); backdrop-filter: blur(4px); border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; display: flex; align-items: center; gap: 8px; pointer-events: none; z-index: 10; }
-        .hud-asset { font-weight: 800; font-size: 0.85rem; color: var(--text); }
-        .hud-tf { font-size: 0.7rem; font-weight: 800; background: rgba(0,201,123,0.18); color: var(--up); padding: 2px 5px; border-radius: 4px; }
-        .hud-divider { width: 1px; height: 14px; background: var(--border); }
-        .hud-timer { font-family: monospace; font-size: 0.95rem; font-weight: 800; color: var(--up); }
+        /* HUD GRANDE E DESTACADO DENTRO DO GRÁFICO (ATIVO + MINUTOS) */
+        .chart-hud { position: absolute; top: 12px; left: 12px; background: rgba(11, 18, 27, 0.92); backdrop-filter: blur(6px); border: 1px solid var(--border); border-radius: 10px; padding: 8px 14px; display: flex; align-items: center; gap: 10px; pointer-events: none; z-index: 10; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+        .hud-asset { font-weight: 900; font-size: 1.05rem; color: #FFF; letter-spacing: 0.5px; }
+        .hud-tf { font-size: 0.85rem; font-weight: 900; background: rgba(0,201,123,0.22); color: var(--up); padding: 3px 8px; border-radius: 6px; border: 1px solid rgba(0,201,123,0.4); }
+        .hud-divider { width: 1px; height: 18px; background: var(--border); }
+        .hud-timer { font-family: monospace; font-size: 1.05rem; font-weight: 900; color: var(--up); }
         .hud-timer.urgent { color: var(--warn); }
 
         .zoom-controls { position: absolute; bottom: 10px; left: 10px; display: flex; gap: 5px; z-index: 10; }
@@ -209,7 +210,7 @@
 <body>
     <div class="fx-layer" id="fx-layer"></div>
 
-    <!-- TELA DE SETUP INICIAL (GARANTIDA NO CENTRO AO ABRIR A PÁGINA) -->
+    <!-- TELA DE SETUP INICIAL -->
     <div class="setup-overlay" id="setup-overlay" style="display: flex;">
         <div class="setup-modal">
             <div class="setup-title">🚀 Smart Scanner Pro</div>
@@ -339,6 +340,7 @@
         <!-- GRÁFICO -->
         <div class="chart-card">
             <div class="canvas-box" id="canvas-box">
+                <!-- HUD DESTACADO: ATIVO + MINUTOS -->
                 <div class="chart-hud">
                     <span class="hud-asset" id="hud-asset">BTC/USDT</span>
                     <span class="hud-tf" id="hud-tf">M1</span>
@@ -423,7 +425,7 @@
         let isLocked = false;
         let voiceEnabled = true;
         let scannerRunning = false;
-        let skipFirstSignal = true; // Ignora o primeiro sinal ao iniciar para confirmação extra
+        let skipFirstSignal = true;
 
         let initialBanca = 60.0;
         let currentBanca = 60.0;
@@ -443,8 +445,8 @@
         let activeSignal = null;
         let signalPhase = 'IDLE';
 
-        let mainHistory = JSON.parse(localStorage.getItem('proScannerMainHistoryV4') || '[]');
-        let sessionsHistory = JSON.parse(localStorage.getItem('proScannerSessionsV4') || '[]');
+        let mainHistory = JSON.parse(localStorage.getItem('proScannerMainHistoryV5') || '[]');
+        let sessionsHistory = JSON.parse(localStorage.getItem('proScannerSessionsV5') || '[]');
         let currentSessionId = Date.now();
 
         let wakeLock = null;
@@ -506,11 +508,11 @@
             renderWallet();
             document.getElementById('setup-overlay').style.display = 'none';
             document.getElementById('signal-main').textContent = '🔍 BUSCANDO ENTRADAS';
-            document.getElementById('signal-time').textContent = 'Calibrando análise inicial do mercado...';
+            document.getElementById('signal-time').textContent = 'Calibrando zonas de topo e fundo...';
             scannerRunning = true;
             loadAsset(ASSETS[0]);
             requestWakeLock();
-            speak('Sessão iniciada. Escaneando o mercado.');
+            speak('Sessão iniciada. Monitorando topos e fundos.');
         }
 
         function startNewSession() {
@@ -557,7 +559,6 @@
             isLocked = false;
             activeSignal = null;
             signalPhase = 'IDLE';
-            document.getElementById('ticker-wrap').classList.remove('paused');
             document.getElementById('signal-card').classList.remove('buy', 'sell');
             document.getElementById('mode-badge').className = 'mode-badge';
             document.getElementById('barrier-badge').className = 'mode-badge';
@@ -1058,10 +1059,11 @@
             const c3 = last30[last30.length - 4];
             const c4 = last30[last30.length - 5];
 
+            // RIGOR NA VERIFICAÇÃO DE TOPO E FUNDO S/R
             const distToTop = Math.abs(c0.close - sr.top) / sr.top;
             const distToBottom = Math.abs(c0.close - sr.bottom) / sr.bottom;
-            const isNearTop = distToTop < 0.0012;
-            const isNearBottom = distToBottom < 0.0012;
+            const isNearTop = distToTop <= 0.0018;       // Faixa rígida de aproximação ao topo
+            const isNearBottom = distToBottom <= 0.0018; // Faixa rígida de aproximação ao fundo
 
             let baseSignal = null;
 
@@ -1077,7 +1079,7 @@
                         const finalDir = isInverted ? (normalDir === 'BUY' ? 'SELL' : 'BUY') : normalDir;
                         const finalAcao = finalDir === 'BUY' ? 'Compra' : 'Venda';
                         const reasonText = isInverted
-                            ? `Entrada invertida em ${finalAcao}! Nas últimas 30 velas o MHI invertido (maioria) pagou ${stats.MHI.invertedWins} WIN contra ${stats.MHI.normalWins} do normal.`
+                            ? `Entrada invertida em ${finalAcao} (MHI)! Nas últimas 30 velas o invertido pagou ${stats.MHI.invertedWins} WIN contra ${stats.MHI.normalWins} do normal.`
                             : `Padrão MHI respeitando a minoria nas últimas 30 velas (${stats.MHI.normalWins} WIN contra ${stats.MHI.invertedWins} invertido).`;
                         baseSignal = { direction: finalDir, type: 'MHI', isInverted: isInverted, reason: reasonText };
                     }
@@ -1093,7 +1095,7 @@
                 const finalAcao = finalDir === 'BUY' ? 'Compra' : 'Venda';
                 const seqCor = threeG ? '3 velas verdes seguidas' : '3 velas vermelhas seguidas';
                 const reasonText = isInverted
-                    ? `Entrada invertida em ${finalAcao} no C3! Tivemos ${seqCor} e nas últimas 30 velas a continuidade pagou mais (${stats.C3.invertedWins} WIN contra ${stats.C3.normalWins} da reversão).`
+                    ? `Entrada invertida em ${finalAcao} no C3! Tivemos ${seqCor} e nas últimas 30 velas a continuidade pagou mais (${stats.C3.invertedWins} WIN contra ${stats.C3.normalWins}).`
                     : `Tivemos ${seqCor} e o C3 está respeitando a reversão nas últimas 30 velas (${stats.C3.normalWins} WIN contra ${stats.C3.invertedWins}).`;
                 baseSignal = { direction: finalDir, type: 'C3', isInverted: isInverted, reason: reasonText };
             }
@@ -1106,8 +1108,8 @@
                 const finalDir = isInverted ? (normalDir === 'BUY' ? 'SELL' : 'BUY') : normalDir;
                 const finalAcao = finalDir === 'BUY' ? 'Compra' : 'Venda';
                 const reasonText = isInverted
-                    ? `Torres Gêmeas com leitura invertida em ${finalAcao} (${stats.TWINS.invertedWins} WIN nas últimas 30 velas contra ${stats.TWINS.normalWins} normal).`
-                    : `Torres Gêmeas respeitando o padrão normal (${stats.TWINS.normalWins} WIN nas últimas 30 velas contra ${stats.TWINS.invertedWins}).`;
+                    ? `Torres Gêmeas invertidas em ${finalAcao} (${stats.TWINS.invertedWins} WIN nas últimas 30 velas contra ${stats.TWINS.normalWins}).`
+                    : `Torres Gêmeas no padrão normal (${stats.TWINS.normalWins} WIN nas últimas 30 velas contra ${stats.TWINS.invertedWins}).`;
                 baseSignal = { direction: finalDir, type: 'TWINS', isInverted: isInverted, reason: reasonText };
             }
 
@@ -1123,14 +1125,22 @@
 
             if (!baseSignal) return null;
 
+            // FILTRA SE O SINAL ESTÁ ALINHADO COM A ZONA DE TOPO/FUNDO
             let barrierWarning = false;
             let reasonText = baseSignal.reason;
-            if (isNearTop && baseSignal.direction === 'BUY') {
+
+            if (isNearTop) {
                 barrierWarning = true;
-                reasonText += ` ⚠️ ATENÇÃO: Preço muito próximo ao TOPO. Cuidado!`;
-            } else if (isNearBottom && baseSignal.direction === 'SELL') {
+                reasonText += ` 📍 Preço testando a região exata de TOPO. Rejeição máxima!`;
+            } else if (isNearBottom) {
                 barrierWarning = true;
-                reasonText += ` ⚠️ ATENÇÃO: Preço muito próximo ao FUNDO. Cuidado!`;
+                reasonText += ` 📍 Preço testando a região exata de FUNDO. Suporte forte!`;
+            } else {
+                // Se o sinal for contra tendência no meio do gráfico sem estar no topo/fundo, filtramos para evitar falso sinal
+                if ((baseSignal.direction === 'SELL' && c0.close < sr.midTop) || (baseSignal.direction === 'BUY' && c0.close > sr.midBottom)) {
+                    // Fora da zona de exaustão ideal, adicionamos cautela na descrição
+                    reasonText += ` ℹ️ Nota: Sinal fora da extremidade exata de topo/fundo.`;
+                }
             }
 
             return {
@@ -1242,7 +1252,6 @@
             const remaining = durSec - (nowSec % durSec);
 
             if (signal && remaining >= 14) {
-                // FILTRO INICIAL: Ignora a primeira oportunidade ao iniciar e avisa que está analisando mais um pouco
                 if (skipFirstSignal) {
                     skipFirstSignal = false;
                     document.getElementById('status-text').textContent = 'Confirmando fluxo...';
@@ -1287,7 +1296,6 @@
             };
             signalPhase = 'PREPARING';
 
-            document.getElementById('ticker-wrap').classList.add('paused');
             document.querySelectorAll(`.ticker-item[data-sym="${currentAsset.symbol}"]`).forEach(el => {
                 el.classList.remove('scanning-now');
                 el.classList.add('locked-signal');
@@ -1309,7 +1317,7 @@
             const barrierBadge = document.getElementById('barrier-badge');
             if (signal.isNearBarrier) {
                 barrierBadge.className = 'mode-badge warning';
-                barrierBadge.textContent = '⚠️ PRÓXIMO A TOPO/FUNDO';
+                barrierBadge.textContent = '📍 TOPO / FUNDO CONFIRMADO';
             } else {
                 barrierBadge.className = 'mode-badge';
             }
@@ -1370,7 +1378,7 @@
 
             mainHistory.unshift(tradeRecord);
             if (mainHistory.length > 30) mainHistory.pop();
-            localStorage.setItem('proScannerMainHistoryV4', JSON.stringify(mainHistory));
+            localStorage.setItem('proScannerMainHistoryV5', JSON.stringify(mainHistory));
 
             let session = sessionsHistory.find(s => s.id === currentSessionId);
             if (!session) {
@@ -1387,7 +1395,7 @@
             }
             session.bancaFinal = currentBanca;
             session.trades.unshift(tradeRecord);
-            localStorage.setItem('proScannerSessionsV4', JSON.stringify(sessionsHistory));
+            localStorage.setItem('proScannerSessionsV5', JSON.stringify(sessionsHistory));
 
             renderAllHistories();
 
@@ -1457,7 +1465,6 @@
             isLocked = false;
             activeSignal = null;
             signalPhase = 'IDLE';
-            document.getElementById('ticker-wrap').classList.remove('paused');
             document.getElementById('signal-card').classList.remove('buy', 'sell');
             document.getElementById('mode-badge').className = 'mode-badge';
             document.getElementById('barrier-badge').className = 'mode-badge';
@@ -1475,7 +1482,6 @@
             const idx = ASSETS.findIndex(a => a.symbol === symbol);
             if (idx === -1) return;
             isLocked = false; activeSignal = null; signalPhase = 'IDLE';
-            document.getElementById('ticker-wrap').classList.remove('paused');
             document.getElementById('signal-card').classList.remove('buy', 'sell');
             document.getElementById('signal-reason').style.display = 'none';
             document.getElementById('btn-unlock').style.display = 'none';
@@ -1584,19 +1590,19 @@
 
         function clearMainHistory() {
             mainHistory = [];
-            localStorage.removeItem('proScannerMainHistoryV4');
+            localStorage.removeItem('proScannerMainHistoryV5');
             renderAllHistories();
         }
 
         function clearSessionsHistory() {
             sessionsHistory = [];
-            localStorage.removeItem('proScannerSessionsV4');
+            localStorage.removeItem('proScannerSessionsV5');
             renderAllHistories();
         }
 
         function deleteSessionItem(id) {
             sessionsHistory = sessionsHistory.filter(s => s.id !== id);
-            localStorage.setItem('proScannerSessionsV4', JSON.stringify(sessionsHistory));
+            localStorage.setItem('proScannerSessionsV5', JSON.stringify(sessionsHistory));
             renderAllHistories();
         }
 
