@@ -5,10 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Smart Scanner Pro</title>
     <meta name="theme-color" content="#05090D">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="manifest" href="manifest.json">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230B121B'/><path d='M20 70 L40 45 L55 58 L80 25' fill='none' stroke='%23FF7043' stroke-width='8' stroke-linecap='round' stroke-linejoin='round'/><circle cx='80' cy='25' r='6' fill='%2300C97B'/></svg>">
+    <link rel="manifest" href="./manifest.json">
+    <link rel="icon" type="image/png" href="./icon-192.png">
+    <link rel="apple-touch-icon" href="./icon-192.png">
     
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
@@ -46,30 +48,36 @@
         /* GAVETA LATERAL */
         .drawer-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); z-index: 2000; display: none; backdrop-filter: blur(2px); }
         .drawer {
-            position: fixed; top: 0; left: -320px; width: 310px; height: 100vh;
+            position: fixed; top: 0; left: -330px; width: 320px; height: 100vh;
             background: #0B121B; border-right: 1px solid var(--border); z-index: 2001;
-            transition: left 0.3s ease; display: flex; flex-direction: column; padding: 20px 16px; gap: 12px; overflow-y: auto;
+            transition: left 0.3s ease; display: flex; flex-direction: column; padding: 18px 15px; gap: 11px; overflow-y: auto;
         }
         .drawer.open { left: 0; }
         .drawer-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
         .drawer-title { font-size: 0.92rem; font-weight: 800; color: var(--text); }
         .drawer-close { background: none; border: none; color: var(--muted); font-size: 1.2rem; cursor: pointer; }
         .drawer-group { display: flex; flex-direction: column; gap: 4px; }
-        .drawer-label { font-size: 0.7rem; color: var(--muted); font-weight: 700; }
+        .drawer-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .drawer-label { font-size: 0.68rem; color: var(--muted); font-weight: 700; }
         .drawer-input {
             background: #050A10; border: 1px solid var(--border); color: var(--text);
-            padding: 7px 9px; border-radius: 8px; font-size: 0.85rem; font-weight: 700;
+            padding: 7px 9px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; width: 100%;
         }
         .drawer-btn {
             background: var(--up); color: #05090D; border: none; padding: 9px;
-            border-radius: 8px; font-weight: 800; font-size: 0.8rem; cursor: pointer;
+            border-radius: 8px; font-weight: 800; font-size: 0.8rem; cursor: pointer; width: 100%;
         }
         .drawer-footer { margin-top: auto; text-align: center; font-size: 0.7rem; color: var(--muted); border-top: 1px solid var(--border); padding-top: 8px; }
         
-        .drawer-history-box { max-height: 150px; overflow-y: auto; background: #050A10; border: 1px solid var(--border); border-radius: 8px; padding: 6px; }
-        .dh-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.72rem; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .dh-row:last-child { border-bottom: none; }
-        .dh-del { background: none; border: none; color: var(--down); cursor: pointer; font-size: 0.8rem; padding: 2px 5px; font-weight: bold; }
+        /* HISTÓRICO AGRUPADO POR SESSÃO NA GAVETA */
+        .drawer-history-box { max-height: 220px; overflow-y: auto; background: #050A10; border: 1px solid var(--border); border-radius: 8px; padding: 6px; display: flex; flex-direction: column; gap: 6px; }
+        .session-card { background: var(--bg-card2); border: 1px solid var(--border); border-radius: 7px; padding: 8px; }
+        .session-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+        .session-info { font-size: 0.73rem; line-height: 1.35; }
+        .session-details { display: none; margin-top: 8px; padding-top: 6px; border-top: 1px dashed var(--border); font-size: 0.7rem; }
+        .session-details.open { display: block; }
+        .sd-item { display: flex; justify-content: space-between; padding: 3px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+        .dh-del { background: none; border: none; color: var(--down); cursor: pointer; font-size: 0.85rem; padding: 2px 6px; font-weight: bold; }
 
         .tf-switch { display: inline-flex; background: var(--bg-card2); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; padding: 2px; }
         .tf-btn { background: transparent; color: var(--muted); border: none; padding: 3px 9px; border-radius: 14px; font-size: 0.72rem; font-weight: 800; cursor: pointer; transition: all 0.2s; }
@@ -103,8 +111,6 @@
         .wallet-val { font-size: 1.15rem; font-weight: 800; font-variant-numeric: tabular-nums; }
         .wallet-val.profit { color: var(--up); }
         .wallet-val.loss { color: var(--down); }
-
-        .advisor-card { background: rgba(255, 179, 0, 0.08); border: 1px solid rgba(255, 179, 0, 0.3); border-radius: 10px; padding: 10px 14px; font-size: 0.78rem; line-height: 1.4; color: #FFE082; display: flex; align-items: center; gap: 10px; }
 
         .signal-card { background: var(--bg-card); border-radius: 12px; padding: 16px; border: 1px solid var(--border); text-align: center; transition: all 0.3s ease; }
         .signal-card.buy { border-color: var(--up); background: linear-gradient(180deg, rgba(0,201,123,0.12) 0%, var(--bg-card) 100%); }
@@ -175,40 +181,46 @@
 <body>
     <div class="fx-layer" id="fx-layer"></div>
 
-    <!-- GAVETA LATERAL (GERENCIAMENTO DE RISCO + HISTÓRICO DE TESTES) -->
+    <!-- GAVETA LATERAL -->
     <div class="drawer-overlay" id="drawer-overlay" onclick="toggleDrawer()"></div>
     <div class="drawer" id="drawer">
         <div class="drawer-header">
-            <span class="drawer-title">⚙️ Gerenciamento de Risco</span>
+            <span class="drawer-title">⚙️ Gerenciamento & Sessões</span>
             <button class="drawer-close" onclick="toggleDrawer()">✕</button>
         </div>
-        <div class="drawer-group">
-            <label class="drawer-label">Valor Inicial da Banca (R$)</label>
-            <input type="number" id="input-banca" class="drawer-input" value="60" onchange="updateWalletSettings()">
+
+        <button class="drawer-btn" id="btn-install-pwa" onclick="installPWA()" style="display:none; background: #FF7043; color: #fff;">📲 Instalar Aplicativo no Celular</button>
+
+        <div class="drawer-row-2">
+            <div class="drawer-group">
+                <label class="drawer-label">Banca Inicial (R$)</label>
+                <input type="number" id="input-banca" class="drawer-input" value="60" onchange="startNewSession()">
+            </div>
+            <div class="drawer-group">
+                <label class="drawer-label">Entrada (R$)</label>
+                <input type="number" id="input-entrada" class="drawer-input" value="5" onchange="updateWalletSettings()">
+            </div>
+        </div>
+        <div class="drawer-row-2">
+            <div class="drawer-group">
+                <label class="drawer-label">Stop Win (R$)</label>
+                <input type="number" id="input-stopwin" class="drawer-input" value="15" onchange="updateWalletSettings()">
+            </div>
+            <div class="drawer-group">
+                <label class="drawer-label">Stop Loss (R$)</label>
+                <input type="number" id="input-stoploss" class="drawer-input" value="12" onchange="updateWalletSettings()">
+            </div>
         </div>
         <div class="drawer-group">
-            <label class="drawer-label">Valor de Cada Entrada (R$)</label>
-            <input type="number" id="input-entrada" class="drawer-input" value="5" onchange="updateWalletSettings()">
-        </div>
-        <div class="drawer-group">
-            <label class="drawer-label">Meta de Stop Win (R$ de lucro)</label>
-            <input type="number" id="input-stopwin" class="drawer-input" value="15" onchange="updateWalletSettings()">
-        </div>
-        <div class="drawer-group">
-            <label class="drawer-label">Limite de Stop Loss (R$ de prejuízo)</label>
-            <input type="number" id="input-stoploss" class="drawer-input" value="12" onchange="updateWalletSettings()">
-        </div>
-        <div class="drawer-group">
-            <label class="drawer-label">Manter Tela Acesa (Wake Lock)</label>
-            <button class="drawer-btn" id="btn-wakelock" onclick="toggleWakeLock()" style="background:var(--bg-card2);color:var(--up);border:1px solid var(--up);">Ativo (Segurando Tela)</button>
+            <button class="drawer-btn" id="btn-wakelock" onclick="toggleWakeLock()" style="background:var(--bg-card2);color:var(--up);border:1px solid var(--up);font-size:0.75rem;">💡 Tela Acesa: Ativo</button>
         </div>
         <div class="drawer-group" style="margin-top: 3px;">
             <div style="display:flex;justify-content:space-between;align-items:center;">
-                <label class="drawer-label">📋 Histórico de Sessões</label>
-                <button class="btn-clear" onclick="clearDrawerHistory()">Limpar</button>
+                <label class="drawer-label">📋 Histórico de Sessões (Toque para abrir)</label>
+                <button class="btn-clear" onclick="clearSessionsHistory()">Limpar</button>
             </div>
             <div class="drawer-history-box" id="drawer-history-list">
-                <div style="text-align:center;color:var(--muted);font-size:0.7rem;padding:6px;">Nenhum registro ainda</div>
+                <div style="text-align:center;color:var(--muted);font-size:0.7rem;padding:8px;">Nenhuma sessão registrada ainda</div>
             </div>
         </div>
         <div class="drawer-footer">
@@ -252,11 +264,6 @@
                 <span class="wallet-label">Banca Atual</span>
                 <span class="wallet-val" id="val-banca-atual">R$ 60.00</span>
             </div>
-        </div>
-
-        <!-- AUTOANÁLISE DE STOP WIN / STOP LOSS -->
-        <div class="advisor-card" id="advisor-card">
-            🤖 <span><strong>Autoanálise:</strong> Sistema pronto. Respeitando pausas e gerenciamento conservador.</span>
         </div>
 
         <!-- CARD DE SINAL -->
@@ -309,10 +316,27 @@
     </div>
 
     <script>
+        // REGISTRO DO SERVICE WORKER E PROMPT DE INSTALAÇÃO PWA
+        let deferredPrompt = null;
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js').catch(() => {});
             });
+        }
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            const installBtn = document.getElementById('btn-install-pwa');
+            if (installBtn) installBtn.style.display = 'block';
+        });
+        async function installPWA() {
+            if (!deferredPrompt) return;
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            if (outcome === 'accepted') {
+                document.getElementById('btn-install-pwa').style.display = 'none';
+            }
+            deferredPrompt = null;
         }
 
         const ASSETS = [
@@ -357,8 +381,9 @@
         let activeSignal = null;
         let signalPhase = 'IDLE';
 
-        let mainHistory = JSON.parse(localStorage.getItem('proScannerMainHistoryV2') || '[]');
-        let drawerHistory = JSON.parse(localStorage.getItem('proScannerHistoryPWAV2') || '[]');
+        let mainHistory = JSON.parse(localStorage.getItem('proScannerMainHistoryV3') || '[]');
+        let sessionsHistory = JSON.parse(localStorage.getItem('proScannerSessionsV3') || '[]');
+        let currentSessionId = Date.now();
 
         let wakeLock = null;
         async function requestWakeLock() {
@@ -366,7 +391,7 @@
                 try {
                     wakeLock = await navigator.wakeLock.request('screen');
                     const btn = document.getElementById('btn-wakelock');
-                    btn.textContent = 'Ativo (Segurando Tela)';
+                    btn.textContent = '💡 Tela Acesa: Ativo';
                     btn.style.color = 'var(--up)';
                     btn.style.borderColor = 'var(--up)';
                 } catch (err) {}
@@ -377,7 +402,7 @@
                 wakeLock.release().then(() => {
                     wakeLock = null;
                     const btn = document.getElementById('btn-wakelock');
-                    btn.textContent = 'Desativado (Toque para ligar)';
+                    btn.textContent = '💡 Tela Acesa: Desativado';
                     btn.style.color = 'var(--down)';
                     btn.style.borderColor = 'var(--down)';
                 });
@@ -396,16 +421,24 @@
             overlay.style.display = isOpen ? 'block' : 'none';
         }
 
-        function updateWalletSettings() {
+        function startNewSession() {
             const bInput = parseFloat(document.getElementById('input-banca').value);
+            if (!isNaN(bInput) && bInput > 0) {
+                initialBanca = bInput;
+                currentBanca = bInput;
+                currentSessionId = Date.now();
+            }
+            updateWalletSettings();
+        }
+
+        function updateWalletSettings() {
             const eInput = parseFloat(document.getElementById('input-entrada').value);
             const swInput = parseFloat(document.getElementById('input-stopwin').value);
             const slInput = parseFloat(document.getElementById('input-stoploss').value);
 
-            if (!isNaN(bInput) && bInput > 0) { initialBanca = bInput; currentBanca = bInput; }
-            if (!isNaN(eInput) && eInput > 0) { entryValue = eInput; }
-            if (!isNaN(swInput) && swInput > 0) { stopWinLimit = swInput; }
-            if (!isNaN(slInput) && slInput > 0) { stopLossLimit = slInput; }
+            if (!isNaN(eInput) && eInput > 0) entryValue = eInput;
+            if (!isNaN(swInput) && swInput > 0) stopWinLimit = swInput;
+            if (!isNaN(slInput) && slInput > 0) stopLossLimit = slInput;
 
             renderWallet();
         }
@@ -415,19 +448,6 @@
             const valEl = document.getElementById('val-banca-atual');
             valEl.textContent = `R$ ${currentBanca.toFixed(2)}`;
             valEl.className = 'wallet-val ' + (currentBanca >= initialBanca ? 'profit' : 'loss');
-
-            const lucroAtual = currentBanca - initialBanca;
-            const adv = document.getElementById('advisor-card');
-
-            if (lucroAtual >= stopWinLimit) {
-                adv.innerHTML = `🏆 <span><strong>STOP WIN ATINGIDO (+R$ ${lucroAtual.toFixed(2)}):</strong> Meta de lucro alcançada! Encerre as operações por hoje.</span>`;
-            } else if (lucroAtual <= -stopLossLimit) {
-                adv.innerHTML = `🛡️ <span><strong>STOP LOSS ATINGIDO (-R$ ${Math.abs(lucroAtual).toFixed(2)}):</strong> Limite de proteção atingido. Pare por segurança!</span>`;
-            } else if (lucroAtual > 0) {
-                adv.innerHTML = `🤖 <span><strong>Autoanálise:</strong> Lucro parcial de R$ +${lucroAtual.toFixed(2)}. Próximo à meta de Stop Win (R$ ${stopWinLimit}).</span>`;
-            } else {
-                adv.innerHTML = `🤖 <span><strong>Autoanálise:</strong> Operando com calma, pausas respeitadas e gerenciamento conservador.</span>`;
-            }
         }
 
         function getCandleDurationSec() {
@@ -953,6 +973,7 @@
 
             let baseSignal = null;
 
+            // 1. MHI Adaptativo
             if (isEndOfQuadrant(c0.time)) {
                 const block5 = [c4, c3, c2, c1, c0];
                 if (block5.every(c => c.close !== c.open)) {
@@ -965,13 +986,14 @@
                         const finalDir = isInverted ? (normalDir === 'BUY' ? 'SELL' : 'BUY') : normalDir;
                         const finalAcao = finalDir === 'BUY' ? 'Compra' : 'Venda';
                         const reasonText = isInverted
-                            ? `Entrando invertido em ${finalAcao}! MHI maior assertividade invertida nos últimos 30m (${stats.MHI.invertedWins} WIN).`
-                            : `Padrão MHI respeitando a minoria nos últimos 30m (${stats.MHI.normalWins} WIN).`;
+                            ? `Entrando invertido em ${finalAcao}! Nos últimos 30m o MHI invertido (maioria) pagou ${stats.MHI.invertedWins} WIN contra ${stats.MHI.normalWins} do normal.`
+                            : `Padrão MHI respeitando a minoria nos últimos 30m (${stats.MHI.normalWins} WIN contra ${stats.MHI.invertedWins} invertido).`;
                         baseSignal = { direction: finalDir, type: 'MHI', isInverted: isInverted, reason: reasonText };
                     }
                 }
             }
 
+            // 2. C3 Adaptativo (Reversão vs Continuidade)
             const threeG = isGreen(c2) && isGreen(c1) && isGreen(c0);
             const threeR = isRed(c2) && isRed(c1) && isRed(c0);
             if (!baseSignal && (threeG || threeR)) {
@@ -979,12 +1001,14 @@
                 const isInverted = stats.C3.invertedWins > stats.C3.normalWins;
                 const finalDir = isInverted ? (normalDir === 'BUY' ? 'SELL' : 'BUY') : normalDir;
                 const finalAcao = finalDir === 'BUY' ? 'Compra' : 'Venda';
+                const seqCor = threeG ? '3 velas verdes seguidas' : '3 velas vermelhas seguidas';
                 const reasonText = isInverted
-                    ? `Entrando invertido em ${finalAcao} no C3 (${stats.C3.invertedWins} WIN na continuidade).`
-                    : `C3 respeitando a reversão nos últimos 30m (${stats.C3.normalWins} WIN).`;
+                    ? `Entrando invertido em ${finalAcao} no C3! Tivemos ${seqCor} e nos últimos 30m a continuidade pagou mais (${stats.C3.invertedWins} WIN contra ${stats.C3.normalWins} da reversão).`
+                    : `Tivemos ${seqCor} e o C3 está respeitando a reversão nos últimos 30m (${stats.C3.normalWins} WIN contra ${stats.C3.invertedWins}).`;
                 baseSignal = { direction: finalDir, type: 'C3', isInverted: isInverted, reason: reasonText };
             }
 
+            // 3. Torres Gêmeas Adaptativo
             const b1 = body(c1), b0 = body(c0);
             const twin = b1 > 0 && b0 > 0 && Math.abs(b1 - b0) / Math.max(b1, b0) <= 0.22;
             if (!baseSignal && twin && ((isRed(c1) && isGreen(c0)) || (isGreen(c1) && isRed(c0)))) {
@@ -993,18 +1017,19 @@
                 const finalDir = isInverted ? (normalDir === 'BUY' ? 'SELL' : 'BUY') : normalDir;
                 const finalAcao = finalDir === 'BUY' ? 'Compra' : 'Venda';
                 const reasonText = isInverted
-                    ? `Torres Gêmeas com leitura invertida em ${finalAcao} (${stats.TWINS.invertedWins} WIN).`
-                    : `Torres Gêmeas no padrão normal (${stats.TWINS.normalWins} WIN).`;
+                    ? `Torres Gêmeas com leitura invertida em ${finalAcao} (${stats.TWINS.invertedWins} WIN contra ${stats.TWINS.normalWins} normal).`
+                    : `Torres Gêmeas respeitando o padrão normal (${stats.TWINS.normalWins} WIN contra ${stats.TWINS.invertedWins}).`;
                 baseSignal = { direction: finalDir, type: 'TWINS', isInverted: isInverted, reason: reasonText };
             }
 
+            // 4. Tendência (EMA)
             if (!baseSignal) {
                 const ema9 = calcEMA(last30, 9);
                 const ema21 = calcEMA(last30, 21);
                 if (c0.close > ema9 && ema9 > ema21 && isGreen(c0)) {
-                    baseSignal = { direction: 'BUY', type: null, isInverted: false, reason: 'Tendência de alta nas médias móveis.' };
+                    baseSignal = { direction: 'BUY', type: null, isInverted: false, reason: 'Tendência de alta alinhada com as médias móveis nos últimos 30m.' };
                 } else if (c0.close < ema9 && ema9 < ema21 && isRed(c0)) {
-                    baseSignal = { direction: 'SELL', type: null, isInverted: false, reason: 'Tendência de baixa nas médias móveis.' };
+                    baseSignal = { direction: 'SELL', type: null, isInverted: false, reason: 'Tendência de baixa alinhada com as médias móveis nos últimos 30m.' };
                 }
             }
 
@@ -1014,10 +1039,10 @@
             let reasonText = baseSignal.reason;
             if (isNearTop && baseSignal.direction === 'BUY') {
                 barrierWarning = true;
-                reasonText += ` ⚠️ ATENÇÃO: Preço próximo ao TOPO. Cuidado!`;
+                reasonText += ` ⚠️ ATENÇÃO: Preço muito próximo ao TOPO. Cuidado!`;
             } else if (isNearBottom && baseSignal.direction === 'SELL') {
                 barrierWarning = true;
-                reasonText += ` ⚠️ ATENÇÃO: Preço próximo ao FUNDO. Cuidado!`;
+                reasonText += ` ⚠️ ATENÇÃO: Preço muito próximo ao FUNDO. Cuidado!`;
             }
 
             return {
@@ -1115,9 +1140,9 @@
         function checkAndDecide() {
             const lucroAtual = currentBanca - initialBanca;
             if (lucroAtual >= stopWinLimit || lucroAtual <= -stopLossLimit) {
-                document.getElementById('status-text').textContent = 'Meta atingida (Stop Win/Loss). Pausado.';
-                document.getElementById('signal-main').textContent = '🛡️ SESSÃO PAUSADA POR SEGURANÇA';
-                document.getElementById('signal-time').textContent = 'Verifique o painel de gerenciamento na gaveta.';
+                document.getElementById('status-text').textContent = 'Meta de gerenciamento atingida.';
+                document.getElementById('signal-main').textContent = '🛡️ SESSÃO ENCERRADA (STOP)';
+                document.getElementById('signal-time').textContent = 'Verifique o resultado na gaveta lateral.';
                 return;
             }
 
@@ -1126,15 +1151,16 @@
             const nowSec = Math.floor(Date.now() / 1000);
             const remaining = durSec - (nowSec % durSec);
 
-            if (signal && remaining >= 6) {
-                prepareSignalAlert(signal);
+            // GARANTIA DE TEMPO PARA PREPARAÇÃO: Só avisa se faltarem pelo menos 14 segundos para abrir a próxima vela
+            if (signal && remaining >= 14) {
+                prepareSignalAlert(signal, remaining);
             } else {
                 document.getElementById('status-text').textContent = `Escaneando ${currentAsset.label}...`;
                 nextAssetAfter(2500);
             }
         }
 
-        function prepareSignalAlert(signal) {
+        function prepareSignalAlert(signal, remainingSec) {
             isLocked = true;
             if (scanTimer) clearTimeout(scanTimer);
 
@@ -1192,18 +1218,17 @@
             document.getElementById('signal-main').textContent = signal.direction === 'BUY'
                 ? `🟢 PREPARAR COMPRA — ${currentAsset.label}`
                 : `🔴 PREPARAR VENDA — ${currentAsset.label}`;
-            document.getElementById('signal-time').innerHTML = `Entrar às <strong>${entryTime}:00</strong>`;
+            document.getElementById('signal-time').innerHTML = `Entrar no próximo minuto: <strong>${entryTime}:00</strong>`;
 
             const reasonBox = document.getElementById('signal-reason');
             reasonBox.style.display = 'block';
-            reasonBox.innerHTML = `<strong>📊 Análise (${currentAsset.label}):</strong>${signal.reason}`;
+            reasonBox.innerHTML = `<strong>📊 Por que esta entrada (${currentAsset.label}):</strong>${signal.reason}`;
 
             document.getElementById('btn-unlock').style.display = 'inline-block';
-            document.getElementById('status-text').textContent = `Aguardando ${entryTime}:00...`;
+            document.getElementById('status-text').textContent = `Prepare-se para ${entryTime}:00...`;
 
             const dirFala = signal.direction === 'BUY' ? 'Compra' : 'Venda';
-            // Fala limpa sem mencionar valores em reais
-            speak(`Atenção. Oportunidade de ${dirFala} em ${currentAsset.label.replace('/', ' ')} para as ${entryTime}. Prepare sua entrada.`);
+            speak(`Atenção! Prepare ${dirFala} em ${currentAsset.label.replace('/', ' ')} para as ${entryTime}. ${signal.reason}`);
         }
 
         function startActualEntryNow(openPrice) {
@@ -1214,12 +1239,12 @@
 
             const dec = openPrice < 1 ? 4 : (openPrice < 100 ? 3 : 2);
             document.getElementById('signal-main').textContent = activeSignal.direction === 'BUY'
-                ? `🚀 OPERANDO COMPRA`
-                : `🚀 OPERANDO VENDA`;
+                ? `🚀 ENTRADA REALIZADA: COMPRA`
+                : `🚀 ENTRADA REALIZADA: VENDA`;
             document.getElementById('signal-time').innerHTML = `Preço: <strong>${openPrice.toFixed(dec)}</strong> • Aguardando término...`;
             document.getElementById('status-text').textContent = `Operação em andamento!`;
             drawChart();
-            speak('Entrada realizada. Operando.');
+            speak('Entre agora! Operação iniciada.');
         }
 
         function finishTradeResult(closedCandle) {
@@ -1236,30 +1261,36 @@
             }
             renderWallet();
 
-            const lucroSessao = currentBanca - initialBanca;
-
-            mainHistory.unshift({
+            const tradeRecord = {
                 time: activeSignal.entryTime,
                 asset: `${activeSignal.label} (${activeSignal.tfLabel})`,
                 direction: activeSignal.direction,
                 isInverted: activeSignal.isInverted,
                 won: won
-            });
-            if (mainHistory.length > 30) mainHistory.pop();
-            localStorage.setItem('proScannerMainHistoryV2', JSON.stringify(mainHistory));
+            };
 
-            drawerHistory.unshift({
-                id: Date.now(),
-                time: activeSignal.entryTime,
-                asset: `${activeSignal.label} (${activeSignal.tfLabel})`,
-                direction: activeSignal.direction,
-                won: won,
-                bancaInicial: initialBanca,
-                bancaFinal: currentBanca,
-                lucro: lucroSessao
-            });
-            if (drawerHistory.length > 25) drawerHistory.pop();
-            localStorage.setItem('proScannerHistoryPWAV2', JSON.stringify(drawerHistory));
+            // 1. Atualiza Histórico Principal (embaixo do gráfico)
+            mainHistory.unshift(tradeRecord);
+            if (mainHistory.length > 30) mainHistory.pop();
+            localStorage.setItem('proScannerMainHistoryV3', JSON.stringify(mainHistory));
+
+            // 2. Agrupa dentro da Sessão Atual na Gaveta (sem repetir um embaixo do outro fora da sessão)
+            let session = sessionsHistory.find(s => s.id === currentSessionId);
+            if (!session) {
+                const now = new Date();
+                const startTimeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+                session = {
+                    id: currentSessionId,
+                    dateTime: startTimeStr,
+                    bancaInicial: initialBanca,
+                    bancaFinal: currentBanca,
+                    trades: []
+                };
+                sessionsHistory.unshift(session);
+            }
+            session.bancaFinal = currentBanca;
+            session.trades.unshift(tradeRecord);
+            localStorage.setItem('proScannerSessionsV3', JSON.stringify(sessionsHistory));
 
             renderAllHistories();
 
@@ -1270,19 +1301,17 @@
             } else {
                 showSadFaces();
                 document.getElementById('signal-main').textContent = '😢 LOSS REGISTRADO';
-                speak('Loss registrado. Vamos com calma.');
+                speak('Loss registrado. Vamos aguardar a próxima oportunidade com calma.');
             }
 
-            // PAUSA DE RESPIRO OBRIGATÓRIA ANTES DE RETOMAR (10 segundos para leitura + 50s de calmaria)
-            document.getElementById('signal-time').textContent = 'Respiro pós-operação (aguarde 50s)...';
-            document.getElementById('status-text').textContent = 'Pausa de respiro...';
+            document.getElementById('signal-time').textContent = 'Tempo de respiro antes da próxima busca...';
+            document.getElementById('status-text').textContent = 'Aguardando pausa...';
 
             activeSignal = null;
             signalPhase = 'IDLE';
             drawChart();
 
-            // Pausa de 50 segundos garantida para o operador respirar e se posicionar
-            setTimeout(resumeAutoScan, 50000);
+            setTimeout(resumeAutoScan, 45000);
         }
 
         function showConfetti() {
@@ -1377,10 +1406,15 @@
                         const currentPrice = candles.length > 0 ? candles[candles.length - 1].close : 0;
                         startActualEntryNow(currentPrice);
                     } else {
-                        document.getElementById('signal-time').innerHTML = `Entrar às <strong>${activeSignal.entryTime}:00</strong> (em ${formatRemainingTime(rem)})`;
+                        document.getElementById('signal-time').innerHTML = `Entrar às <strong>${activeSignal.entryTime}:00</strong> (prepare-se em ${formatRemainingTime(rem)})`;
                     }
                 }
             }, 300);
+        }
+
+        function toggleSessionDetails(sessionId) {
+            const el = document.getElementById(`sess-det-${sessionId}`);
+            if (el) el.classList.toggle('open');
         }
 
         function renderAllHistories() {
@@ -1412,25 +1446,37 @@
                 `).join('');
             }
 
+            // Histórico Agrupado por Sessão na Gaveta
             const drawerList = document.getElementById('drawer-history-list');
-            if (drawerHistory.length === 0) {
-                drawerList.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:0.7rem;padding:6px;">Nenhum registro ainda</div>';
+            if (sessionsHistory.length === 0) {
+                drawerList.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:0.7rem;padding:8px;">Nenhuma sessão registrada ainda</div>';
             } else {
-                drawerList.innerHTML = drawerHistory.map(item => {
-                    const lucroVal = item.lucro || 0;
-                    const lucroColor = lucroVal >= 0 ? 'var(--up)' : 'var(--down)';
+                drawerList.innerHTML = sessionsHistory.map(sess => {
+                    const lucro = sess.bancaFinal - sess.bancaInicial;
+                    const lucroColor = lucro >= 0 ? 'var(--up)' : 'var(--down)';
+                    const sWins = sess.trades.filter(t => t.won).length;
+                    const sLosses = sess.trades.length - sWins;
+
+                    const tradesHtml = sess.trades.map(t => `
+                        <div class="sd-item">
+                            <span>${t.time} - ${t.asset} (${t.direction === 'BUY' ? 'C' : 'V'})</span>
+                            <strong style="color:${t.won ? 'var(--up)' : 'var(--down)'}">${t.won ? 'WIN' : 'LOSS'}</strong>
+                        </div>
+                    `).join('');
+
                     return `
-                        <div class="dh-row">
-                            <div>
-                                <strong>${item.asset}</strong> (${item.time})<br>
-                                <span style="color:${item.won ? 'var(--up)' : 'var(--down)'};font-weight:700;">
-                                    ${item.direction === 'BUY' ? 'COMPRA' : 'VENDA'} • ${item.won ? 'WIN' : 'LOSS'}
-                                </span><br>
-                                <span style="color:${lucroColor};font-size:0.65rem;font-weight:700;">
-                                    Banca: R$ ${item.bancaFinal.toFixed(2)} (${lucroVal >= 0 ? '+' : ''}R$ ${lucroVal.toFixed(2)})
-                                </span>
+                        <div class="session-card">
+                            <div class="session-header" onclick="toggleSessionDetails(${sess.id})">
+                                <div class="session-info">
+                                    <strong>Sessão ${sess.dateTime}</strong> (${sWins}W / ${sLosses}L)<br>
+                                    <span style="color:var(--muted);">Início: R$ ${sess.bancaInicial.toFixed(2)} → Atual: R$ ${sess.bancaFinal.toFixed(2)}</span><br>
+                                    <span style="color:${lucroColor};font-weight:700;">Lucro: ${lucro >= 0 ? '+' : ''}R$ ${lucro.toFixed(2)} ▾</span>
+                                </div>
+                                <button class="dh-del" onclick="event.stopPropagation(); deleteSessionItem(${sess.id})" title="Excluir Sessão">✕</button>
                             </div>
-                            <button class="dh-del" onclick="deleteDrawerHistoryItem(${item.id})" title="Excluir">✕</button>
+                            <div class="session-details" id="sess-det-${sess.id}">
+                                ${tradesHtml}
+                            </div>
                         </div>
                     `;
                 }).join('');
@@ -1439,19 +1485,19 @@
 
         function clearMainHistory() {
             mainHistory = [];
-            localStorage.removeItem('proScannerMainHistoryV2');
+            localStorage.removeItem('proScannerMainHistoryV3');
             renderAllHistories();
         }
 
-        function clearDrawerHistory() {
-            drawerHistory = [];
-            localStorage.removeItem('proScannerHistoryPWAV2');
+        function clearSessionsHistory() {
+            sessionsHistory = [];
+            localStorage.removeItem('proScannerSessionsV3');
             renderAllHistories();
         }
 
-        function deleteDrawerHistoryItem(id) {
-            drawerHistory = drawerHistory.filter(h => h.id !== id);
-            localStorage.setItem('proScannerHistoryPWAV2', JSON.stringify(drawerHistory));
+        function deleteSessionItem(id) {
+            sessionsHistory = sessionsHistory.filter(s => s.id !== id);
+            localStorage.setItem('proScannerSessionsV3', JSON.stringify(sessionsHistory));
             renderAllHistories();
         }
 
