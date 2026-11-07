@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Daytrade v1 Pro</title>
+    <title>Smart Scanner Pro</title>
     <meta name="theme-color" content="#05090D">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -30,7 +30,6 @@
         }
         body { background: var(--bg-dark); color: var(--text); min-height: 100vh; padding-bottom: 36px; overflow-x: hidden; }
         
-        /* TELA DE SETUP INICIAL (MODAL CENTRAL OBRIGATÓRIA) */
         .setup-overlay {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background: rgba(5, 9, 13, 0.96); z-index: 99999; display: flex;
@@ -71,7 +70,6 @@
             justify-content: center; font-size: 1rem; cursor: pointer; font-weight: bold;
         }
 
-        /* GAVETA LATERAL */
         .drawer-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); z-index: 2000; display: none; backdrop-filter: blur(2px); }
         .drawer {
             position: fixed; top: 0; left: -330px; width: 320px; height: 100vh;
@@ -175,7 +173,6 @@
 
         .chart-legend-mini { display: flex; justify-content: center; gap: 12px; margin-top: 6px; font-size: 0.68rem; color: var(--muted); flex-wrap: wrap; }
 
-        /* HISTÓRICO PRINCIPAL EMBAIXO DO GRÁFICO */
         .history-card { background: var(--bg-card); border-radius: 12px; padding: 14px; border: 1px solid var(--border); }
         .hist-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 0.82rem; }
         .hist-score { font-weight: 800; color: var(--up); }
@@ -187,10 +184,8 @@
         .res-win { color: var(--up); font-weight: 800; }
         .res-loss { color: var(--down); font-weight: 800; }
 
-        /* RODAPÉ TÉCNICO */
         .tech-footer { text-align: center; font-size: 0.7rem; color: var(--muted); margin-top: 14px; padding: 6px; border-top: 1px solid var(--border); }
 
-        /* MODO PAISAGEM INTELIGENTE */
         @media (min-width: 768px) or (orientation: landscape) {
             .container { max-width: 98vw; display: grid; grid-template-columns: 360px 1fr; gap: 12px; align-items: start; }
             .chart-card { grid-column: 2; grid-row: 1 / span 4; }
@@ -208,11 +203,10 @@
 <body>
     <div class="fx-layer" id="fx-layer"></div>
 
-    <!-- TELA DE SETUP INICIAL -->
     <div class="setup-overlay" id="setup-overlay" style="display: flex;">
         <div class="setup-modal">
-            <div class="setup-title">🚀 Daytrader v1 Pro</div>
-            <div class="setup-subtitle">Configure sua banca e gerenciamento para iniciar</div>
+            <div class="setup-title">🚀 Smart Scanner Pro</div>
+            <div class="setup-subtitle">Gestão de Risco & Trader Profissional</div>
             
             <div class="setup-group">
                 <label class="setup-label">Valor da Banca Inicial (R$)</label>
@@ -231,12 +225,11 @@
                 <input type="number" id="modal-stoploss" class="setup-input" value="12">
             </div>
 
-            <button class="setup-btn" onclick="submitSetupModal()">Iniciar Sessão</button>
-            <div class="setup-footer-note">Desenvolvido para fins de estudos técnicos e análise de padrões.</div>
+            <button class="setup-btn" onclick="submitSetupModal()">Iniciar Sessão com Proteção</button>
+            <div class="setup-footer-note">Análise avançada de Topos, Fundos, Fibo e Multi-Estratégias.</div>
         </div>
     </div>
 
-    <!-- GAVETA LATERAL -->
     <div class="drawer-overlay" id="drawer-overlay" onclick="toggleDrawer()"></div>
     <div class="drawer" id="drawer">
         <div class="drawer-header">
@@ -283,13 +276,12 @@
         </div>
     </div>
 
-    <!-- TOPO FIXO -->
     <div class="sticky-top">
         <div class="header">
             <div class="logo">
                 <button class="btn-menu" onclick="toggleDrawer()" title="Menu">•••</button>
                 <div class="logo-dot"></div>
-                <h1>DAYTRADE V1 PRO</h1>
+                <h1>SMART SCANNER PRO</h1>
             </div>
             <div class="header-right">
                 <div class="tf-switch">
@@ -309,7 +301,6 @@
     </div>
 
     <div class="container">
-        <!-- PAINEL DE BANCA -->
         <div class="wallet-panel">
             <div class="wallet-box">
                 <span class="wallet-label">Banca Inicial</span>
@@ -321,7 +312,6 @@
             </div>
         </div>
 
-        <!-- CARD DE SINAL -->
         <div class="signal-card" id="signal-card">
             <div class="signal-main" id="signal-main">⏳ AGUARDANDO INÍCIO</div>
             <div class="badges-row">
@@ -335,7 +325,6 @@
             </div>
         </div>
 
-        <!-- GRÁFICO -->
         <div class="chart-card">
             <div class="canvas-box" id="canvas-box">
                 <div class="chart-hud">
@@ -358,7 +347,6 @@
             </div>
         </div>
 
-        <!-- HISTÓRICO PRINCIPAL -->
         <div class="history-card">
             <div class="hist-top">
                 <span class="hist-score" id="hist-score">Placar: 0 WIN • 0 LOSS</span>
@@ -369,7 +357,6 @@
             </div>
         </div>
 
-        <!-- RODAPÉ TÉCNICO -->
         <div class="tech-footer">
             Ferramenta desenvolvida exclusivamente para estudos técnicos e análise de padrões de mercado.
         </div>
@@ -442,8 +429,8 @@
         let activeSignal = null;
         let signalPhase = 'IDLE';
 
-        let mainHistory = JSON.parse(localStorage.getItem('proScannerMainHistoryV6') || '[]');
-        let sessionsHistory = JSON.parse(localStorage.getItem('proScannerSessionsV6') || '[]');
+        let mainHistory = JSON.parse(localStorage.getItem('proScannerMainHistoryV7') || '[]');
+        let sessionsHistory = JSON.parse(localStorage.getItem('proScannerSessionsV7') || '[]');
         let currentSessionId = Date.now();
 
         let wakeLock = null;
@@ -504,12 +491,12 @@
 
             renderWallet();
             document.getElementById('setup-overlay').style.display = 'none';
-            document.getElementById('signal-main').textContent = '🔍 BUSCANDO ENTRADAS';
-            document.getElementById('signal-time').textContent = 'Monitorando reversão em topos e fundos...';
+            document.getElementById('signal-main').textContent = '🛡️ MODO TRADER PROFISSIONAL';
+            document.getElementById('signal-time').textContent = 'Escaneando alta probabilidade...';
             scannerRunning = true;
             loadAsset(ASSETS[0]);
             requestWakeLock();
-            speak('Sessão iniciada. Monitorando zonas de exaustão.');
+            speak('Sessão iniciada com gestão rigorosa. Protegendo o capital.');
         }
 
         function startNewSession() {
@@ -559,12 +546,12 @@
             document.getElementById('signal-card').classList.remove('buy', 'sell');
             document.getElementById('mode-badge').className = 'mode-badge';
             document.getElementById('barrier-badge').className = 'mode-badge';
-            document.getElementById('signal-main').textContent = '🔍 BUSCANDO ENTRADAS';
-            document.getElementById('signal-time').textContent = `Analisando topos e fundos em ${tf === '1m' ? 'M1' : 'M5'}...`;
+            document.getElementById('signal-main').textContent = '🛡️ MODO TRADER PROFISSIONAL';
+            document.getElementById('signal-time').textContent = `Analisando ${tf === '1m' ? 'M1' : 'M5'} com filtro máximo...`;
             document.getElementById('signal-reason').style.display = 'none';
             document.getElementById('btn-unlock').style.display = 'none';
 
-            speak(`Tempo gráfico alterado para ${tf === '1m' ? 'M 1' : 'M 5'}.`);
+            speak(`Tempo alterado para ${tf === '1m' ? 'M 1' : 'M 5'}.`);
             if (scannerRunning) loadAsset(currentAsset);
         }
 
@@ -738,7 +725,8 @@
             const stats = {
                 MHI: { normalWins: 0, invertedWins: 0 },
                 C3: { normalWins: 0, invertedWins: 0 },
-                TWINS: { normalWins: 0, invertedWins: 0 }
+                TWINS: { normalWins: 0, invertedWins: 0 },
+                HARAMI: { normalWins: 0, invertedWins: 0 }
             };
 
             for (let i = 4; i < slice.length - 1; i++) {
@@ -779,6 +767,17 @@
                     if (isRed(next)) stats.TWINS.normalWins++;
                     if (isGreen(next)) stats.TWINS.invertedWins++;
                 }
+
+                // Estratégia Avançada 4: Engolfo / Harami em Zona
+                const engolfoAlta = isRed(c1) && isGreen(c0) && c0.close > c1.open && c0.open <= c1.close;
+                const engolfoBaixa = isGreen(c1) && isRed(c0) && c0.close < c1.open && c0.open >= c1.close;
+                if (engolfoAlta) {
+                    if (isGreen(next)) stats.HARAMI.normalWins++;
+                    if (isRed(next)) stats.HARAMI.invertedWins++;
+                } else if (engolfoBaixa) {
+                    if (isRed(next)) stats.HARAMI.normalWins++;
+                    if (isGreen(next)) stats.HARAMI.invertedWins++;
+                }
             }
             return stats;
         }
@@ -789,6 +788,7 @@
             const invertMHI = stats.MHI.invertedWins > stats.MHI.normalWins;
             const invertC3 = stats.C3.invertedWins > stats.C3.normalWins;
             const invertTwins = stats.TWINS.invertedWins > stats.TWINS.normalWins;
+            const invertHarami = stats.HARAMI.invertedWins > stats.HARAMI.normalWins;
 
             const last30 = allCandles.slice(-30);
             const isGreen = c => c.close > c.open;
@@ -809,8 +809,7 @@
                             if ((g === 2 && r === 1) || (r === 2 && g === 1)) {
                                 const normalDir = (g === 2) ? 'SELL' : 'BUY';
                                 const chosenDir = invertMHI ? (normalDir === 'BUY' ? 'SELL' : 'BUY') : normalDir;
-                                const won = chosenDir === 'BUY' ? isGreen(nextCandle) : isRed(nextCandle);
-                                if (won) {
+                                if (chosenDir === 'BUY' ? isGreen(nextCandle) : isRed(nextCandle)) {
                                     markers.push({ time: nextCandle.time, direction: chosenDir });
                                     continue;
                                 }
@@ -825,8 +824,7 @@
                     if (threeG || threeR) {
                         const normalDir = threeG ? 'SELL' : 'BUY';
                         const chosenDir = invertC3 ? (normalDir === 'BUY' ? 'SELL' : 'BUY') : normalDir;
-                        const won = chosenDir === 'BUY' ? isGreen(nextCandle) : isRed(nextCandle);
-                        if (won) {
+                        if (chosenDir === 'BUY' ? isGreen(nextCandle) : isRed(nextCandle)) {
                             markers.push({ time: nextCandle.time, direction: chosenDir });
                             continue;
                         }
@@ -839,8 +837,20 @@
                     if (twin && ((isRed(c1) && isGreen(c0)) || (isGreen(c1) && isRed(c0)))) {
                         const normalDir = (isRed(c1) && isGreen(c0)) ? 'BUY' : 'SELL';
                         const chosenDir = invertTwins ? (normalDir === 'BUY' ? 'SELL' : 'BUY') : normalDir;
-                        const won = chosenDir === 'BUY' ? isGreen(nextCandle) : isRed(nextCandle);
-                        if (won) {
+                        if (chosenDir === 'BUY' ? isGreen(nextCandle) : isRed(nextCandle)) {
+                            markers.push({ time: nextCandle.time, direction: chosenDir });
+                            continue;
+                        }
+                    }
+                }
+
+                if (!targetType || targetType === 'HARAMI') {
+                    const engAlta = isRed(c1) && isGreen(c0) && c0.close > c1.open;
+                    const engBaixa = isGreen(c1) && isRed(c0) && c0.close < c1.open;
+                    if (engAlta || engBaixa) {
+                        const normalDir = engAlta ? 'BUY' : 'SELL';
+                        const chosenDir = invertHarami ? (normalDir === 'BUY' ? 'SELL' : 'BUY') : normalDir;
+                        if (chosenDir === 'BUY' ? isGreen(nextCandle) : isRed(nextCandle)) {
                             markers.push({ time: nextCandle.time, direction: chosenDir });
                             continue;
                         }
@@ -1058,11 +1068,12 @@
 
             const distToTop = Math.abs(c0.close - sr.top) / sr.top;
             const distToBottom = Math.abs(c0.close - sr.bottom) / sr.bottom;
-            const isNearTop = distToTop <= 0.0018;
-            const isNearBottom = distToBottom <= 0.0018;
+            const isNearTop = distToTop <= 0.0022;
+            const isNearBottom = distToBottom <= 0.0022;
 
             let baseSignal = null;
 
+            // 1. MHI Aprimorado com Filtro de Assertividade
             if (isEndOfQuadrant(c0.time)) {
                 const block5 = [c4, c3, c2, c1, c0];
                 if (block5.every(c => c.close !== c.open)) {
@@ -1073,45 +1084,55 @@
                         const normalDir = (g === 2) ? 'SELL' : 'BUY';
                         const isInverted = stats.MHI.invertedWins > stats.MHI.normalWins;
                         const finalDir = isInverted ? (normalDir === 'BUY' ? 'SELL' : 'BUY') : normalDir;
-                        const reasonText = `Padrão MHI nas últimas 30 velas (${stats.MHI.normalWins} WIN).`;
-                        baseSignal = { direction: finalDir, type: 'MHI', isInverted: isInverted, reason: reasonText };
+                        baseSignal = { direction: finalDir, type: 'MHI', isInverted, reason: `Estratégia MHI (${stats.MHI.normalWins}W).` };
                     }
                 }
             }
 
+            // 2. C3 (Continuidade / Reversão de 3 Velas)
             const threeG = isGreen(c2) && isGreen(c1) && isGreen(c0);
             const threeR = isRed(c2) && isRed(c1) && isRed(c0);
             if (!baseSignal && (threeG || threeR)) {
                 const normalDir = threeG ? 'SELL' : 'BUY';
                 const isInverted = stats.C3.invertedWins > stats.C3.normalWins;
                 const finalDir = isInverted ? (normalDir === 'BUY' ? 'SELL' : 'BUY') : normalDir;
-                const reasonText = `Padrão C3 nas últimas 30 velas (${stats.C3.normalWins} WIN).`;
-                baseSignal = { direction: finalDir, type: 'C3', isInverted: isInverted, reason: reasonText };
+                baseSignal = { direction: finalDir, type: 'C3', isInverted, reason: `Estratégia C3 (${stats.C3.normalWins}W).` };
             }
 
+            // 3. Torres Gêmeas
             const b1 = body(c1), b0 = body(c0);
             const twin = b1 > 0 && b0 > 0 && Math.abs(b1 - b0) / Math.max(b1, b0) <= 0.22;
             if (!baseSignal && twin && ((isRed(c1) && isGreen(c0)) || (isGreen(c1) && isRed(c0)))) {
                 const normalDir = (isRed(c1) && isGreen(c0)) ? 'BUY' : 'SELL';
                 const isInverted = stats.TWINS.invertedWins > stats.TWINS.normalWins;
                 const finalDir = isInverted ? (normalDir === 'BUY' ? 'SELL' : 'BUY') : normalDir;
-                const reasonText = `Torres Gêmeas nas últimas 30 velas (${stats.TWINS.normalWins} WIN).`;
-                baseSignal = { direction: finalDir, type: 'TWINS', isInverted: isInverted, reason: reasonText };
+                baseSignal = { direction: finalDir, type: 'TWINS', isInverted, reason: `Torres Gêmeas (${stats.TWINS.normalWins}W).` };
             }
 
+            // 4. Engolfo / Harami (Reversão em Zonas)
+            const engAlta = isRed(c1) && isGreen(c0) && c0.close > c1.open;
+            const engBaixa = isGreen(c1) && isRed(c0) && c0.close < c1.open;
+            if (!baseSignal && (engAlta || engBaixa)) {
+                const normalDir = engAlta ? 'BUY' : 'SELL';
+                const isInverted = stats.HARAMI.invertedWins > stats.HARAMI.normalWins;
+                const finalDir = isInverted ? (normalDir === 'BUY' ? 'SELL' : 'BUY') : normalDir;
+                baseSignal = { direction: finalDir, type: 'HARAMI', isInverted, reason: `Engolfo de Preço (${stats.HARAMI.normalWins}W).` };
+            }
+
+            // 5. Tendência Defensiva com Médias
             if (!baseSignal) {
                 const ema9 = calcEMA(last30, 9);
                 const ema21 = calcEMA(last30, 21);
                 if (c0.close > ema9 && ema9 > ema21 && isGreen(c0)) {
-                    baseSignal = { direction: 'BUY', type: null, isInverted: false, reason: 'Tendência de alta nas médias móveis.' };
+                    baseSignal = { direction: 'BUY', type: null, isInverted: false, reason: 'Tendência de Alta nas Médias.' };
                 } else if (c0.close < ema9 && ema9 < ema21 && isRed(c0)) {
-                    baseSignal = { direction: 'SELL', type: null, isInverted: false, reason: 'Tendência de baixa nas médias móveis.' };
+                    baseSignal = { direction: 'SELL', type: null, isInverted: false, reason: 'Tendência de Baixa nas Médias.' };
                 }
             }
 
             if (!baseSignal) return null;
 
-            // REVERSÃO INTELIGENTE DE TOPO E FUNDO (FIBO / S&R)
+            // ROTAÇÃO E PROTEÇÃO DE TOPO / FUNDO / FIBO
             let finalDirection = baseSignal.direction;
             let reasonText = baseSignal.reason;
             let barrierWarning = false;
@@ -1119,14 +1140,14 @@
             if (isNearTop && finalDirection === 'BUY') {
                 finalDirection = 'SELL';
                 barrierWarning = true;
-                reasonText = `🔄 REVERSÃO AUTOMÁTICA! O preço bateu no TOPO exato (Resistência / Fibo R). Invertido para VENDA.`;
+                reasonText = `🛡️ PROTEÇÃO PROFISSIONAL: Preço no TOPO exato (Resistência/Fibo). Invertido para VENDA.`;
             } else if (isNearBottom && finalDirection === 'SELL') {
                 finalDirection = 'BUY';
                 barrierWarning = true;
-                reasonText = `🔄 REVERSÃO AUTOMÁTICA! O preço testou o FUNDO exato (Suporte / Fibo S). Invertido para COMPRA.`;
+                reasonText = `🛡️ PROTEÇÃO PROFISSIONAL: Preço no FUNDO exato (Suporte/Fibo). Invertido para COMPRA.`;
             } else if (isNearTop || isNearBottom) {
                 barrierWarning = true;
-                reasonText += ` 📍 Preço na zona exata de exaustão de S/R.`;
+                reasonText += ` 📍 Zona de exaustão milimétrica.`;
             }
 
             return {
@@ -1210,7 +1231,6 @@
                     }
                     drawChart();
 
-                    // REAVALIAÇÃO EM TEMPO REAL ANTES DO DISPARO DA ENTRADA
                     if (activeSignal && signalPhase === 'PREPARING') {
                         const updatedSignal = analyzeMarket(candles);
                         if (updatedSignal && updatedSignal.direction !== activeSignal.direction) {
@@ -1224,7 +1244,7 @@
 
                             const badge = document.getElementById('mode-badge');
                             badge.className = 'mode-badge warning';
-                            badge.textContent = '🔄 SINAL REVERTIDO NA BARREIRA!';
+                            badge.textContent = '🔄 REVERSÃO DE PROTEÇÃO';
 
                             document.getElementById('signal-main').textContent = activeSignal.direction === 'BUY'
                                 ? `🟢 REVERTIDO PARA COMPRA — ${currentAsset.label}`
@@ -1232,10 +1252,10 @@
 
                             const reasonBox = document.getElementById('signal-reason');
                             reasonBox.style.display = 'block';
-                            reasonBox.innerHTML = `<strong>⚠️ ATENÇÃO AO TOQUE NA BARREIRA:</strong>${activeSignal.reason}`;
+                            reasonBox.innerHTML = `<strong>⚠️ DEFESA DE CAPITAL:</strong>${activeSignal.reason}`;
 
                             const dirFala = activeSignal.direction === 'BUY' ? 'Compra' : 'Venda';
-                            speak(`Atenção! O preço tocou na barreira e o sinal foi revertido para ${dirFala}!`);
+                            speak(`Atenção! Proteção acionada, sinal revertido para ${dirFala}!`);
                         }
                     }
                 }
@@ -1269,10 +1289,10 @@
             if (signal && remaining >= 14) {
                 if (skipFirstSignal) {
                     skipFirstSignal = false;
-                    document.getElementById('status-text').textContent = 'Confirmando fluxo...';
-                    document.getElementById('signal-main').textContent = '⏳ ANALISANDO UM POUCO MAIS';
-                    document.getElementById('signal-time').textContent = 'Vamos analisar mais um pouco, aguarde...';
-                    speak('Vamos analisar mais um pouco, aguarde.');
+                    document.getElementById('status-text').textContent = 'Filtrando ruídos...';
+                    document.getElementById('signal-main').textContent = '⏳ ANALISANDO COM RIGOR';
+                    document.getElementById('signal-time').textContent = 'Avaliando confluência de mercado...';
+                    speak('Analisando confluência com rigor.');
                     nextAssetAfter(3500);
                     return;
                 }
@@ -1323,29 +1343,29 @@
             const badge = document.getElementById('mode-badge');
             if (signal.isNearBarrier) {
                 badge.className = 'mode-badge warning';
-                badge.textContent = '📍 REJEIÇÃO EM TOPO / FUNDO';
+                badge.textContent = '🛡️ PROTEÇÃO DE TOPO / FUNDO';
             } else if (signal.isInverted) {
                 badge.className = 'mode-badge inverted';
-                badge.textContent = '🔄 MODO INVERTIDO';
+                badge.textContent = '🔄 ESTRATÉGIA INVERTIDA';
             } else {
                 badge.className = 'mode-badge normal';
-                badge.textContent = '✅ PADRÃO NORMAL';
+                badge.textContent = '✅ ALTA CONFLUÊNCIA';
             }
 
             document.getElementById('signal-main').textContent = signal.direction === 'BUY'
-                ? `🟢 PREPARAR COMPRA — ${currentAsset.label}`
-                : `🔴 PREPARAR VENDA — ${currentAsset.label}`;
-            document.getElementById('signal-time').innerHTML = `Entrar no próximo minuto: <strong>${entryTime}:00</strong>`;
+                ? `🟢 ENTRADA DE ALTA CONFIANÇA: COMPRA`
+                : `🔴 ENTRADA DE ALTA CONFIANÇA: VENDA`;
+            document.getElementById('signal-time').innerHTML = `Executar às: <strong>${entryTime}:00</strong>`;
 
             const reasonBox = document.getElementById('signal-reason');
             reasonBox.style.display = 'block';
-            reasonBox.innerHTML = `<strong>📊 Por que esta entrada (${currentAsset.label}):</strong>${signal.reason}`;
+            reasonBox.innerHTML = `<strong>📊 Análise do Trader (${currentAsset.label}):</strong>${signal.reason}`;
 
             document.getElementById('btn-unlock').style.display = 'inline-block';
-            document.getElementById('status-text').textContent = `Prepare-se para ${entryTime}:00...`;
+            document.getElementById('status-text').textContent = `Alvo travado para ${entryTime}:00...`;
 
             const dirFala = signal.direction === 'BUY' ? 'Compra' : 'Venda';
-            speak(`Atenção! Prepare ${dirFala} em ${currentAsset.label.replace('/', ' ')} para as ${entryTime}. ${signal.reason}`);
+            speak(`Atenção trader! Oportunidade segura de ${dirFala} em ${currentAsset.label.replace('/', ' ')} para as ${entryTime}.`);
         }
 
         function startActualEntryNow(openPrice) {
@@ -1356,12 +1376,12 @@
 
             const dec = openPrice < 1 ? 4 : (openPrice < 100 ? 3 : 2);
             document.getElementById('signal-main').textContent = activeSignal.direction === 'BUY'
-                ? `🚀 ENTRADA REALIZADA: COMPRA`
-                : `🚀 ENTRADA REALIZADA: VENDA`;
-            document.getElementById('signal-time').innerHTML = `Preço: <strong>${openPrice.toFixed(dec)}</strong> • Aguardando término...`;
+                ? `🚀 OPERANDO: COMPRA`
+                : `🚀 OPERANDO: VENDA`;
+            document.getElementById('signal-time').innerHTML = `Preço: <strong>${openPrice.toFixed(dec)}</strong> • Gerenciando risco...`;
             document.getElementById('status-text').textContent = `Operação em andamento!`;
             drawChart();
-            speak('Entre agora! Operação iniciada.');
+            speak('Entrada confirmada. Operando com disciplina.');
         }
 
         function finishTradeResult(closedCandle) {
@@ -1388,7 +1408,7 @@
 
             mainHistory.unshift(tradeRecord);
             if (mainHistory.length > 30) mainHistory.pop();
-            localStorage.setItem('proScannerMainHistoryV6', JSON.stringify(mainHistory));
+            localStorage.setItem('proScannerMainHistoryV7', JSON.stringify(mainHistory));
 
             let session = sessionsHistory.find(s => s.id === currentSessionId);
             if (!session) {
@@ -1405,22 +1425,22 @@
             }
             session.bancaFinal = currentBanca;
             session.trades.unshift(tradeRecord);
-            localStorage.setItem('proScannerSessionsV6', JSON.stringify(sessionsHistory));
+            localStorage.setItem('proScannerSessionsV7', JSON.stringify(sessionsHistory));
 
             renderAllHistories();
 
             if (won) {
                 showConfetti();
-                document.getElementById('signal-main').textContent = '🎉 WIN CONFIRMADO!';
-                speak('Vitória! Deu win.');
+                document.getElementById('signal-main').textContent = '🎉 WIN GARANTIDO!';
+                speak('Excelente! Lucro no bolso.');
             } else {
                 showSadFaces();
-                document.getElementById('signal-main').textContent = '😢 LOSS REGISTRADO';
-                speak('Loss registrado. Vamos aguardar a próxima oportunidade com calma.');
+                document.getElementById('signal-main').textContent = '🛡️ LOSS CONTROLADO';
+                speak('Loss dentro do gerenciamento. Mantenha a calma e o foco.');
             }
 
-            document.getElementById('signal-time').textContent = 'Tempo de respiro antes da próxima busca...';
-            document.getElementById('status-text').textContent = 'Aguardando pausa...';
+            document.getElementById('signal-time').textContent = 'Pausa estratégica de respiro...';
+            document.getElementById('status-text').textContent = 'Aguardando próximo ciclo...';
 
             activeSignal = null;
             signalPhase = 'IDLE';
@@ -1450,7 +1470,7 @@
             for (let i = 0; i < 36; i++) {
                 const el = document.createElement('div');
                 el.className = 'sad-face';
-                el.textContent = '😢';
+                el.textContent = '🛡️';
                 el.style.left = `${Math.random() * 100}vw`;
                 el.style.animationDuration = `${2.2 + Math.random() * 1.5}s`;
                 layer.appendChild(el);
@@ -1478,8 +1498,8 @@
             document.getElementById('signal-card').classList.remove('buy', 'sell');
             document.getElementById('mode-badge').className = 'mode-badge';
             document.getElementById('barrier-badge').className = 'mode-badge';
-            document.getElementById('signal-main').textContent = '🔍 BUSCANDO ENTRADAS';
-            document.getElementById('signal-time').textContent = `Analisando topos e fundos em ${timeframe === '1m' ? 'M1' : 'M5'}...`;
+            document.getElementById('signal-main').textContent = '🛡️ MODO TRADER PROFISSIONAL';
+            document.getElementById('signal-time').textContent = `Escaneando com rigor em ${timeframe === '1m' ? 'M1' : 'M5'}...`;
             document.getElementById('signal-reason').style.display = 'none';
             document.getElementById('btn-unlock').style.display = 'none';
             document.getElementById('status-text').textContent = 'Escaneando...';
@@ -1522,7 +1542,7 @@
                         const currentPrice = candles.length > 0 ? candles[candles.length - 1].close : 0;
                         startActualEntryNow(currentPrice);
                     } else {
-                        document.getElementById('signal-time').innerHTML = `Entrar às <strong>${activeSignal.entryTime}:00</strong> (prepare-se em ${formatRemainingTime(rem)})`;
+                        document.getElementById('signal-time').innerHTML = `Executar às <strong>${activeSignal.entryTime}:00</strong> (faltam ${formatRemainingTime(rem)})`;
                     }
                 }
             }, 300);
@@ -1600,19 +1620,19 @@
 
         function clearMainHistory() {
             mainHistory = [];
-            localStorage.removeItem('proScannerMainHistoryV6');
+            localStorage.removeItem('proScannerMainHistoryV7');
             renderAllHistories();
         }
 
         function clearSessionsHistory() {
             sessionsHistory = [];
-            localStorage.removeItem('proScannerSessionsV6');
+            localStorage.removeItem('proScannerSessionsV7');
             renderAllHistories();
         }
 
         function deleteSessionItem(id) {
             sessionsHistory = sessionsHistory.filter(s => s.id !== id);
-            localStorage.setItem('proScannerSessionsV6', JSON.stringify(sessionsHistory));
+            localStorage.setItem('proScannerSessionsV7', JSON.stringify(sessionsHistory));
             renderAllHistories();
         }
 
