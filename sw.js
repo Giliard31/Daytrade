@@ -1,5 +1,6 @@
-const CACHE_NAME = 'smart-scanner-v2';
+const CACHE_NAME = 'smart-scanner-v3';
 const assetsToCache = [
+  './',
   './index.html',
   './manifest.json'
 ];
