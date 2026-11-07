@@ -2,7 +2,7 @@
   "id": "/smart-scanner-pro/",
   "name": "Smart Scanner Pro - Giliard Martins",
   "short_name": "SmartScanner",
-  "description": "Scanner de Opções Binárias e Análise de Padrões - Desenvolvido por Giliard Martins",
+  "description": "Ferramenta de estudos técnicos e análise de padrões",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
