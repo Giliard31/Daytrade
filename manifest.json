@@ -1,26 +1,21 @@
 {
-  "id": "/smart-scanner-pro/",
-  "name": "Smart Scanner Pro - Giliard Martins",
-  "short_name": "SmartScanner",
-  "description": "Ferramenta de estudos técnicos e análise de padrões",
+  "name": "Smart Scanner Pro",
+  "short_name": "ScannerPro",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "background_color": "#05090D",
   "theme_color": "#05090D",
-  "orientation": "any",
   "icons": [
     {
       "src": "./icon-192.png",
       "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     },
     {
       "src": "./icon-512.png",
       "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     }
   ]
 }
