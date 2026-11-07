@@ -1,4 +1,4 @@
-const CACHE_NAME = 'smart-scanner-v3';
+const CACHE_NAME = 'smart-scanner-v4';
 const assetsToCache = [
   './',
   './index.html',
