@@ -206,7 +206,7 @@
     <div class="setup-overlay" id="setup-overlay" style="display: flex;">
         <div class="setup-modal">
             <div class="setup-title">🚀 Smart Scanner Pro</div>
-            <div class="setup-subtitle">Gestão de Risco & Trader Profissional</div>
+            <div class="setup-subtitle">Gestão de Risco & Análise de Pavios e Dojis</div>
             
             <div class="setup-group">
                 <label class="setup-label">Valor da Banca Inicial (R$)</label>
@@ -225,8 +225,8 @@
                 <input type="number" id="modal-stoploss" class="setup-input" value="12">
             </div>
 
-            <button class="setup-btn" onclick="submitSetupModal()">Iniciar Sessão com Proteção</button>
-            <div class="setup-footer-note">Análise avançada de Topos, Fundos, Fibo e Multi-Estratégias.</div>
+            <button class="setup-btn" onclick="submitSetupModal()">Iniciar Sessão Blindada</button>
+            <div class="setup-footer-note">Filtro avançado antirruído, anti-doji e análise geométrica de pavios.</div>
         </div>
     </div>
 
@@ -429,8 +429,8 @@
         let activeSignal = null;
         let signalPhase = 'IDLE';
 
-        let mainHistory = JSON.parse(localStorage.getItem('proScannerMainHistoryV7') || '[]');
-        let sessionsHistory = JSON.parse(localStorage.getItem('proScannerSessionsV7') || '[]');
+        let mainHistory = JSON.parse(localStorage.getItem('proScannerMainHistoryV8') || '[]');
+        let sessionsHistory = JSON.parse(localStorage.getItem('proScannerSessionsV8') || '[]');
         let currentSessionId = Date.now();
 
         let wakeLock = null;
@@ -491,12 +491,12 @@
 
             renderWallet();
             document.getElementById('setup-overlay').style.display = 'none';
-            document.getElementById('signal-main').textContent = '🛡️ MODO TRADER PROFISSIONAL';
-            document.getElementById('signal-time').textContent = 'Escaneando alta probabilidade...';
+            document.getElementById('signal-main').textContent = '🛡️ TRADER PROFISSIONAL (BLINDADO)';
+            document.getElementById('signal-time').textContent = 'Escaneando com filtro anti-doji e pavios...';
             scannerRunning = true;
             loadAsset(ASSETS[0]);
             requestWakeLock();
-            speak('Sessão iniciada com gestão rigorosa. Protegendo o capital.');
+            speak('Sessão iniciada. Analisando pavios, corpos e zonas de exaustão.');
         }
 
         function startNewSession() {
@@ -546,8 +546,8 @@
             document.getElementById('signal-card').classList.remove('buy', 'sell');
             document.getElementById('mode-badge').className = 'mode-badge';
             document.getElementById('barrier-badge').className = 'mode-badge';
-            document.getElementById('signal-main').textContent = '🛡️ MODO TRADER PROFISSIONAL';
-            document.getElementById('signal-time').textContent = `Analisando ${tf === '1m' ? 'M1' : 'M5'} com filtro máximo...`;
+            document.getElementById('signal-main').textContent = '🛡️ TRADER PROFISSIONAL';
+            document.getElementById('signal-time').textContent = `Analisando ${tf === '1m' ? 'M1' : 'M5'}...`;
             document.getElementById('signal-reason').style.display = 'none';
             document.getElementById('btn-unlock').style.display = 'none';
 
@@ -732,6 +732,10 @@
             for (let i = 4; i < slice.length - 1; i++) {
                 const c0 = slice[i], c1 = slice[i - 1], c2 = slice[i - 2], c3 = slice[i - 3], c4 = slice[i - 4], next = slice[i + 1];
 
+                // FILTRO DE DOJI NAS ESTATÍSTICAS
+                const totalRange = c0.high - c0.low;
+                if (totalRange > 0 && (body(c0) / totalRange) < 0.12) continue; // Pula Dojis no histórico
+
                 if (isEndOfQuadrant(c0.time)) {
                     const block5 = [c4, c3, c2, c1, c0];
                     if (block5.every(c => c.close !== c.open)) {
@@ -767,17 +771,6 @@
                     if (isRed(next)) stats.TWINS.normalWins++;
                     if (isGreen(next)) stats.TWINS.invertedWins++;
                 }
-
-                // Estratégia Avançada 4: Engolfo / Harami em Zona
-                const engolfoAlta = isRed(c1) && isGreen(c0) && c0.close > c1.open && c0.open <= c1.close;
-                const engolfoBaixa = isGreen(c1) && isRed(c0) && c0.close < c1.open && c0.open >= c1.close;
-                if (engolfoAlta) {
-                    if (isGreen(next)) stats.HARAMI.normalWins++;
-                    if (isRed(next)) stats.HARAMI.invertedWins++;
-                } else if (engolfoBaixa) {
-                    if (isRed(next)) stats.HARAMI.normalWins++;
-                    if (isGreen(next)) stats.HARAMI.invertedWins++;
-                }
             }
             return stats;
         }
@@ -788,7 +781,6 @@
             const invertMHI = stats.MHI.invertedWins > stats.MHI.normalWins;
             const invertC3 = stats.C3.invertedWins > stats.C3.normalWins;
             const invertTwins = stats.TWINS.invertedWins > stats.TWINS.normalWins;
-            const invertHarami = stats.HARAMI.invertedWins > stats.HARAMI.normalWins;
 
             const last30 = allCandles.slice(-30);
             const isGreen = c => c.close > c.open;
@@ -798,6 +790,9 @@
 
             for (let i = 4; i < last30.length - 1; i++) {
                 const c0 = last30[i], c1 = last30[i - 1], c2 = last30[i - 2], c3 = last30[i - 3], c4 = last30[i - 4], nextCandle = last30[i + 1];
+
+                const totalRange = c0.high - c0.low;
+                if (totalRange > 0 && (body(c0) / totalRange) < 0.12) continue;
 
                 if (!targetType || targetType === 'MHI') {
                     if (isEndOfQuadrant(c0.time)) {
@@ -824,32 +819,6 @@
                     if (threeG || threeR) {
                         const normalDir = threeG ? 'SELL' : 'BUY';
                         const chosenDir = invertC3 ? (normalDir === 'BUY' ? 'SELL' : 'BUY') : normalDir;
-                        if (chosenDir === 'BUY' ? isGreen(nextCandle) : isRed(nextCandle)) {
-                            markers.push({ time: nextCandle.time, direction: chosenDir });
-                            continue;
-                        }
-                    }
-                }
-
-                if (!targetType || targetType === 'TWINS') {
-                    const b1 = body(c1), b0 = body(c0);
-                    const twin = b1 > 0 && b0 > 0 && Math.abs(b1 - b0) / Math.max(b1, b0) <= 0.22;
-                    if (twin && ((isRed(c1) && isGreen(c0)) || (isGreen(c1) && isRed(c0)))) {
-                        const normalDir = (isRed(c1) && isGreen(c0)) ? 'BUY' : 'SELL';
-                        const chosenDir = invertTwins ? (normalDir === 'BUY' ? 'SELL' : 'BUY') : normalDir;
-                        if (chosenDir === 'BUY' ? isGreen(nextCandle) : isRed(nextCandle)) {
-                            markers.push({ time: nextCandle.time, direction: chosenDir });
-                            continue;
-                        }
-                    }
-                }
-
-                if (!targetType || targetType === 'HARAMI') {
-                    const engAlta = isRed(c1) && isGreen(c0) && c0.close > c1.open;
-                    const engBaixa = isGreen(c1) && isRed(c0) && c0.close < c1.open;
-                    if (engAlta || engBaixa) {
-                        const normalDir = engAlta ? 'BUY' : 'SELL';
-                        const chosenDir = invertHarami ? (normalDir === 'BUY' ? 'SELL' : 'BUY') : normalDir;
                         if (chosenDir === 'BUY' ? isGreen(nextCandle) : isRed(nextCandle)) {
                             markers.push({ time: nextCandle.time, direction: chosenDir });
                             continue;
@@ -1066,6 +1035,24 @@
             const c3 = last30[last30.length - 4];
             const c4 = last30[last30.length - 5];
 
+            // 🛡️ ANÁLISE RIGOROSA DE DOJI E PAVIOS NA VELA ATUAL (c0)
+            const totalRange = c0.high - c0.low;
+            if (totalRange <= 0) return null;
+            
+            const bodySize = body(c0);
+            const bodyRatio = bodySize / totalRange;
+
+            // FILTRO DE DOJI: Se o corpo for menor que 12% do tamanho total, é Doji / indecisão pura -> REJEITAR IMEDIATAMENTE
+            if (bodyRatio < 0.12) {
+                return null; 
+            }
+
+            // Análise geométrica de Pavios (Superior e Inferior)
+            const upperWick = c0.high - Math.max(c0.open, c0.close);
+            const lowerWick = Math.min(c0.open, c0.close) - c0.low;
+            const upperWickRatio = upperWick / totalRange;
+            const lowerWickRatio = lowerWick / totalRange;
+
             const distToTop = Math.abs(c0.close - sr.top) / sr.top;
             const distToBottom = Math.abs(c0.close - sr.bottom) / sr.bottom;
             const isNearTop = distToTop <= 0.0022;
@@ -1073,7 +1060,6 @@
 
             let baseSignal = null;
 
-            // 1. MHI Aprimorado com Filtro de Assertividade
             if (isEndOfQuadrant(c0.time)) {
                 const block5 = [c4, c3, c2, c1, c0];
                 if (block5.every(c => c.close !== c.open)) {
@@ -1084,22 +1070,20 @@
                         const normalDir = (g === 2) ? 'SELL' : 'BUY';
                         const isInverted = stats.MHI.invertedWins > stats.MHI.normalWins;
                         const finalDir = isInverted ? (normalDir === 'BUY' ? 'SELL' : 'BUY') : normalDir;
-                        baseSignal = { direction: finalDir, type: 'MHI', isInverted, reason: `Estratégia MHI (${stats.MHI.normalWins}W).` };
+                        baseSignal = { direction: finalDir, type: 'MHI', isInverted, reason: `MHI Estrutural (${stats.MHI.normalWins}W).` };
                     }
                 }
             }
 
-            // 2. C3 (Continuidade / Reversão de 3 Velas)
             const threeG = isGreen(c2) && isGreen(c1) && isGreen(c0);
             const threeR = isRed(c2) && isRed(c1) && isRed(c0);
             if (!baseSignal && (threeG || threeR)) {
                 const normalDir = threeG ? 'SELL' : 'BUY';
                 const isInverted = stats.C3.invertedWins > stats.C3.normalWins;
                 const finalDir = isInverted ? (normalDir === 'BUY' ? 'SELL' : 'BUY') : normalDir;
-                baseSignal = { direction: finalDir, type: 'C3', isInverted, reason: `Estratégia C3 (${stats.C3.normalWins}W).` };
+                baseSignal = { direction: finalDir, type: 'C3', isInverted, reason: `C3 Tendência (${stats.C3.normalWins}W).` };
             }
 
-            // 3. Torres Gêmeas
             const b1 = body(c1), b0 = body(c0);
             const twin = b1 > 0 && b0 > 0 && Math.abs(b1 - b0) / Math.max(b1, b0) <= 0.22;
             if (!baseSignal && twin && ((isRed(c1) && isGreen(c0)) || (isGreen(c1) && isRed(c0)))) {
@@ -1109,45 +1093,44 @@
                 baseSignal = { direction: finalDir, type: 'TWINS', isInverted, reason: `Torres Gêmeas (${stats.TWINS.normalWins}W).` };
             }
 
-            // 4. Engolfo / Harami (Reversão em Zonas)
-            const engAlta = isRed(c1) && isGreen(c0) && c0.close > c1.open;
-            const engBaixa = isGreen(c1) && isRed(c0) && c0.close < c1.open;
-            if (!baseSignal && (engAlta || engBaixa)) {
-                const normalDir = engAlta ? 'BUY' : 'SELL';
-                const isInverted = stats.HARAMI.invertedWins > stats.HARAMI.normalWins;
-                const finalDir = isInverted ? (normalDir === 'BUY' ? 'SELL' : 'BUY') : normalDir;
-                baseSignal = { direction: finalDir, type: 'HARAMI', isInverted, reason: `Engolfo de Preço (${stats.HARAMI.normalWins}W).` };
-            }
-
-            // 5. Tendência Defensiva com Médias
             if (!baseSignal) {
                 const ema9 = calcEMA(last30, 9);
                 const ema21 = calcEMA(last30, 21);
                 if (c0.close > ema9 && ema9 > ema21 && isGreen(c0)) {
-                    baseSignal = { direction: 'BUY', type: null, isInverted: false, reason: 'Tendência de Alta nas Médias.' };
+                    baseSignal = { direction: 'BUY', type: null, isInverted: false, reason: 'Médias em Alta com corpo consistente.' };
                 } else if (c0.close < ema9 && ema9 < ema21 && isRed(c0)) {
-                    baseSignal = { direction: 'SELL', type: null, isInverted: false, reason: 'Tendência de Baixa nas Médias.' };
+                    baseSignal = { direction: 'SELL', type: null, isInverted: false, reason: 'Médias em Baixa com corpo consistente.' };
                 }
             }
 
             if (!baseSignal) return null;
 
-            // ROTAÇÃO E PROTEÇÃO DE TOPO / FUNDO / FIBO
+            // 🛡️ REGRAS DE PAVIO E REJEIÇÃO EM TOPO/FUNDO
             let finalDirection = baseSignal.direction;
             let reasonText = baseSignal.reason;
             let barrierWarning = false;
 
-            if (isNearTop && finalDirection === 'BUY') {
+            // Se o pavio superior for gigantesco (> 50% da vela) e perto do topo -> REJEIÇÃO ABSOLUTA PARA VENDA
+            if (upperWickRatio > 0.50 && isNearTop) {
                 finalDirection = 'SELL';
                 barrierWarning = true;
-                reasonText = `🛡️ PROTEÇÃO PROFISSIONAL: Preço no TOPO exato (Resistência/Fibo). Invertido para VENDA.`;
-            } else if (isNearBottom && finalDirection === 'SELL') {
+                reasonText = `🛡️ PAVIO DE REJEIÇÃO SUPERIOR (${Math.round(upperWickRatio*100)}%): Força vendedora dominante no topo. VENDA CONFIRMADA.`;
+            }
+            // Se o pavio inferior for gigantesco (> 50% da vela) e perto do fundo -> REJEIÇÃO ABSOLUTA PARA COMPRA
+            else if (lowerWickRatio > 0.50 && isNearBottom) {
                 finalDirection = 'BUY';
                 barrierWarning = true;
-                reasonText = `🛡️ PROTEÇÃO PROFISSIONAL: Preço no FUNDO exato (Suporte/Fibo). Invertido para COMPRA.`;
-            } else if (isNearTop || isNearBottom) {
+                reasonText = `🛡️ PAVIO DE REJEIÇÃO INFERIOR (${Math.round(lowerWickRatio*100)}%): Força compradora dominante no fundo. COMPRA CONFIRMADA.`;
+            }
+            else if (isNearTop && finalDirection === 'BUY') {
+                finalDirection = 'SELL';
                 barrierWarning = true;
-                reasonText += ` 📍 Zona de exaustão milimétrica.`;
+                reasonText = `🛡️ DEFESA DE TOPO S/R: Reversão automática para VENDA.`;
+            }
+            else if (isNearBottom && finalDirection === 'SELL') {
+                finalDirection = 'BUY';
+                barrierWarning = true;
+                reasonText = `🛡️ DEFESA DE FUNDO S/R: Reversão automática para COMPRA.`;
             }
 
             return {
@@ -1244,7 +1227,7 @@
 
                             const badge = document.getElementById('mode-badge');
                             badge.className = 'mode-badge warning';
-                            badge.textContent = '🔄 REVERSÃO DE PROTEÇÃO';
+                            badge.textContent = '🛡️ DEFESA DE PAVIO / TOPO';
 
                             document.getElementById('signal-main').textContent = activeSignal.direction === 'BUY'
                                 ? `🟢 REVERTIDO PARA COMPRA — ${currentAsset.label}`
@@ -1252,10 +1235,10 @@
 
                             const reasonBox = document.getElementById('signal-reason');
                             reasonBox.style.display = 'block';
-                            reasonBox.innerHTML = `<strong>⚠️ DEFESA DE CAPITAL:</strong>${activeSignal.reason}`;
+                            reasonBox.innerHTML = `<strong>⚠️ ANÁLISE GEOMÉTRICA DE VELA:</strong>${activeSignal.reason}`;
 
                             const dirFala = activeSignal.direction === 'BUY' ? 'Compra' : 'Venda';
-                            speak(`Atenção! Proteção acionada, sinal revertido para ${dirFala}!`);
+                            speak(`Rejeição confirmada por pavio, sinal invertido para ${dirFala}!`);
                         }
                     }
                 }
@@ -1289,10 +1272,10 @@
             if (signal && remaining >= 14) {
                 if (skipFirstSignal) {
                     skipFirstSignal = false;
-                    document.getElementById('status-text').textContent = 'Filtrando ruídos...';
-                    document.getElementById('signal-main').textContent = '⏳ ANALISANDO COM RIGOR';
-                    document.getElementById('signal-time').textContent = 'Avaliando confluência de mercado...';
-                    speak('Analisando confluência com rigor.');
+                    document.getElementById('status-text').textContent = 'Filtrando dojis e ruídos...';
+                    document.getElementById('signal-main').textContent = '⏳ ANÁLISE DE PAVIOS';
+                    document.getElementById('signal-time').textContent = 'Avaliando corpo e rejeição de velas...';
+                    speak('Analisando pavios e corpos.');
                     nextAssetAfter(3500);
                     return;
                 }
@@ -1343,29 +1326,29 @@
             const badge = document.getElementById('mode-badge');
             if (signal.isNearBarrier) {
                 badge.className = 'mode-badge warning';
-                badge.textContent = '🛡️ PROTEÇÃO DE TOPO / FUNDO';
+                badge.textContent = '🛡️ REJEIÇÃO POR PAVIO / S&R';
             } else if (signal.isInverted) {
                 badge.className = 'mode-badge inverted';
                 badge.textContent = '🔄 ESTRATÉGIA INVERTIDA';
             } else {
                 badge.className = 'mode-badge normal';
-                badge.textContent = '✅ ALTA CONFLUÊNCIA';
+                badge.textContent = '✅ CORPO CONSISTENTE';
             }
 
             document.getElementById('signal-main').textContent = signal.direction === 'BUY'
-                ? `🟢 ENTRADA DE ALTA CONFIANÇA: COMPRA`
-                : `🔴 ENTRADA DE ALTA CONFIANÇA: VENDA`;
+                ? `🟢 ENTRADA BLINDADA: COMPRA`
+                : `🔴 ENTRADA BLINDADA: VENDA`;
             document.getElementById('signal-time').innerHTML = `Executar às: <strong>${entryTime}:00</strong>`;
 
             const reasonBox = document.getElementById('signal-reason');
             reasonBox.style.display = 'block';
-            reasonBox.innerHTML = `<strong>📊 Análise do Trader (${currentAsset.label}):</strong>${signal.reason}`;
+            reasonBox.innerHTML = `<strong>📊 Análise Geométrica (${currentAsset.label}):</strong>${signal.reason}`;
 
             document.getElementById('btn-unlock').style.display = 'inline-block';
             document.getElementById('status-text').textContent = `Alvo travado para ${entryTime}:00...`;
 
             const dirFala = signal.direction === 'BUY' ? 'Compra' : 'Venda';
-            speak(`Atenção trader! Oportunidade segura de ${dirFala} em ${currentAsset.label.replace('/', ' ')} para as ${entryTime}.`);
+            speak(`Oportunidade blindada de ${dirFala} em ${currentAsset.label.replace('/', ' ')} para as ${entryTime}. Sem dojis, com pavio favorável.`);
         }
 
         function startActualEntryNow(openPrice) {
@@ -1381,7 +1364,7 @@
             document.getElementById('signal-time').innerHTML = `Preço: <strong>${openPrice.toFixed(dec)}</strong> • Gerenciando risco...`;
             document.getElementById('status-text').textContent = `Operação em andamento!`;
             drawChart();
-            speak('Entrada confirmada. Operando com disciplina.');
+            speak('Entrada confirmada. Monitorando vela.');
         }
 
         function finishTradeResult(closedCandle) {
@@ -1408,7 +1391,7 @@
 
             mainHistory.unshift(tradeRecord);
             if (mainHistory.length > 30) mainHistory.pop();
-            localStorage.setItem('proScannerMainHistoryV7', JSON.stringify(mainHistory));
+            localStorage.setItem('proScannerMainHistoryV8', JSON.stringify(mainHistory));
 
             let session = sessionsHistory.find(s => s.id === currentSessionId);
             if (!session) {
@@ -1425,22 +1408,23 @@
             }
             session.bancaFinal = currentBanca;
             session.trades.unshift(tradeRecord);
-            localStorage.setItem('proScannerSessionsV7', JSON.stringify(sessionsHistory));
+            localStorage.setItem('proScannerSessionsV8', JSON.stringify(sessionsHistory));
 
             renderAllHistories();
 
             if (won) {
                 showConfetti();
                 document.getElementById('signal-main').textContent = '🎉 WIN GARANTIDO!';
-                speak('Excelente! Lucro no bolso.');
+                speak('Vitória! Mais um lucro protegido.');
             } else {
                 showSadFaces();
                 document.getElementById('signal-main').textContent = '🛡️ LOSS CONTROLADO';
-                speak('Loss dentro do gerenciamento. Mantenha a calma e o foco.');
+                speak('Loss controlado dentro da gestão.');
             }
 
-            document.getElementById('signal-time').textContent = 'Pausa estratégica de respiro...';
-            document.getElementById('status-text').textContent = 'Aguardando próximo ciclo...';
+            // PAUSA DE RESPIRO DE 45 SEGUNDOS (O Ticker e Gráfico rodam normais, mas sem novos sinais)
+            document.getElementById('signal-time').textContent = 'Pausa de proteção ativa (45s de respiro)...';
+            document.getElementById('status-text').textContent = 'Resfriando scanner...';
 
             activeSignal = null;
             signalPhase = 'IDLE';
@@ -1498,7 +1482,7 @@
             document.getElementById('signal-card').classList.remove('buy', 'sell');
             document.getElementById('mode-badge').className = 'mode-badge';
             document.getElementById('barrier-badge').className = 'mode-badge';
-            document.getElementById('signal-main').textContent = '🛡️ MODO TRADER PROFISSIONAL';
+            document.getElementById('signal-main').textContent = '🛡️ TRADER PROFISSIONAL';
             document.getElementById('signal-time').textContent = `Escaneando com rigor em ${timeframe === '1m' ? 'M1' : 'M5'}...`;
             document.getElementById('signal-reason').style.display = 'none';
             document.getElementById('btn-unlock').style.display = 'none';
@@ -1620,19 +1604,19 @@
 
         function clearMainHistory() {
             mainHistory = [];
-            localStorage.removeItem('proScannerMainHistoryV7');
+            localStorage.removeItem('proScannerMainHistoryV8');
             renderAllHistories();
         }
 
         function clearSessionsHistory() {
             sessionsHistory = [];
-            localStorage.removeItem('proScannerSessionsV7');
+            localStorage.removeItem('proScannerSessionsV8');
             renderAllHistories();
         }
 
         function deleteSessionItem(id) {
             sessionsHistory = sessionsHistory.filter(s => s.id !== id);
-            localStorage.setItem('proScannerSessionsV7', JSON.stringify(sessionsHistory));
+            localStorage.setItem('proScannerSessionsV8', JSON.stringify(sessionsHistory));
             renderAllHistories();
         }
 
